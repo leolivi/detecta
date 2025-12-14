@@ -18,15 +18,16 @@ Die Basis: Vite React Extension Template.
 ## MVP
 
 1. Vite + React Extension Template aufsetzen.
-2. Service Worker implementieren, der Network Requests sammelt.
-3. tracker.json von DuckDuckGo Tracker Radar ins Repo einbinden.
-4. Network Requests mit tracker.json abgleichen (erste Version, einfache Domain-Matches).
-5. Counter System im Service Worker implementieren.
-6. Content Script implementieren, das:
+2. Manifest.json erstellen
+3. Service Worker implementieren, der Network Requests sammelt.
+4. tracker.json von DuckDuckGo Tracker Radar ins Repo einbinden.
+5. Network Requests mit tracker.json abgleichen (erste Version, einfache Domain-Matches).
+6. Counter System im Service Worker implementieren.
+7. Content Script implementieren, das:
    - URL-Parameter (URL Decoration / Attribution) erkennt
    - Tracking Pixels, Iframes, Widgets, Third-Party Scripts und Links im DOM zählt
-7. Kommunikation zwischen Service Worker <-> Content Script via `chrome.runtime.sendMessage` / Listener
-8. UI mit React + ShadCN Komponenten:
+8. Kommunikation zwischen Service Worker <-> Content Script via `chrome.runtime.sendMessage` / Listener
+9. UI mit React + ShadCN Komponenten:
    - Chart zur Visualisierung der Tracking-Daten
    - Unterscheidung nach TrackingMethod & TrackerPurpose
 
