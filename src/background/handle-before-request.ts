@@ -1,0 +1,41 @@
+import {TRACKING_DOMAINS} from "../data/tracking-domains";
+
+interface HandleBeforeRequestArgs {
+  tabId: number;
+  details: chrome.webRequest.OnBeforeRequestDetails;
+  trackersCache: Map<number, Set<string>>;
+  onTrackerDetected: (count: number) => void;
+}
+
+export function handleBeforeRequest({
+  tabId,
+  details,
+  trackersCache,
+  onTrackerDetected,
+}: HandleBeforeRequestArgs): void {
+  let url: URL;
+
+  try {
+    url = new URL(details.url);
+  } catch {
+    return;
+  }
+
+  // check if request is a tracker
+  const tracker = TRACKING_DOMAINS.find((t) => url.hostname.endsWith(t.domain));
+
+  if (!tracker) return;
+
+  // set tabId if none is set already
+  let trackerSet = trackersCache.get(tabId);
+  if (!trackerSet) {
+    trackerSet = new Set();
+    trackersCache.set(tabId, trackerSet);
+  }
+
+  if (trackerSet.has(tracker.domain)) return;
+
+  // increment in memory counter of trackers
+  trackerSet.add(tracker.domain);
+  onTrackerDetected(trackerSet.size);
+}
