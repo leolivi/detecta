@@ -5,8 +5,8 @@ import {checkUrlTrackingParams} from "./handle-tab-update";
 
 // ---- IN-MEMORY CACHE ---- //
 // per tab saving
-let trackersCache: Map<number, Set<string>> = new Map();
-let urlParamsCache: Map<number, Set<string>> = new Map();
+const trackersCache: Map<number, Set<string>> = new Map();
+const urlParamsCache: Map<number, Set<string>> = new Map();
 
 // ---- INSTALLATION ---- //
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -93,6 +93,25 @@ chrome.webRequest.onBeforeRequest.addListener(
   },
   {urls: ["<all_urls>"]}
 );
+
+// react on message from tracking chart to get the tracker counts
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
+    const networkRequests = trackersCache.get(message.tabId)?.size ?? 0;
+    const urlParameters = urlParamsCache.get(message.tabId)?.size ?? 0;
+
+    sendResponse({
+      networkRequests,
+      urlParameters,
+      iframes: 0,
+      pixels: 0,
+      widgets: 0,
+      scripts: 0,
+      sender,
+    });
+    return true; // keep channel open for async
+  }
+});
 
 /* --- Cleanup --- */
 // remove tracking count if tab is closed
