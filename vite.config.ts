@@ -1,31 +1,20 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import {defineConfig} from "vite";
+import react from "@vitejs/plugin-react";
+import {crx} from "@crxjs/vite-plugin";
+import manifest from "./public/manifest.json";
+import path from "path";
 
 export default defineConfig({
-  plugins: [
-    react(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'public/manifest.json',
-          dest: '.',
-        }
-      ],
-    }),
-  ],
-  build: {
-    outDir: 'build',
-    rollupOptions: {
-      input: {
-        main: './index.html',
-        background: './src/background.ts',
-      },
-      output: {
-        entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === 'background' ? 'background.js' : 'assets/[name]-[hash].js';
-        },
-      },
+  plugins: [react(), crx({manifest})],
+  resolve: {
+    alias: {
+      "@": path.resolve(process.cwd(), "src"),
     },
+  },
+  build: {
+    outDir: "build",
+  },
+  css: {
+    postcss: "./postcss.config.js",
   },
 });
