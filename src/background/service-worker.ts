@@ -1,9 +1,12 @@
 /// <reference types="chrome" />
 
 import {handleBeforeRequest} from "./handle-before-request";
+import {checkUrlTrackingParams} from "./handle-tab-update";
 
 // ---- IN-MEMORY CACHE ---- //
+// per tab saving
 let trackersCache: Map<number, Set<string>> = new Map();
+let urlParamsCache: Map<number, Set<string>> = new Map();
 
 // ---- INSTALLATION ---- //
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -20,11 +23,40 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   // reset counter when page is reloading
   if (changeInfo.status === "loading" && changeInfo.url) {
-    console.log(
-      `Tab ${tabId}: Navigation zu ${changeInfo.url} - Reset counter`
-    );
     trackersCache.set(tabId, new Set());
+    urlParamsCache.set(tabId, new Set());
   }
+
+  /* ---- Tracking Type: 
+  NETWORK TRACKER (Request-Level Tracking)
+  ---- */
+
+  if (changeInfo.status !== "complete") return;
+
+  chrome.tabs.get(tabId, (tab) => {
+    if (!tab?.url) return;
+    checkUrlTrackingParams({
+      tabId,
+      urlString: tab.url,
+      urlParamsCache,
+      onParamsDetected: (params) => {
+        // save params to storage
+        chrome.storage.local.set({
+          [`urlParams_${tabId}`]: params,
+        });
+        // notify content script
+        chrome.tabs
+          .sendMessage(tabId, {
+            type: "URL_PARAMS_DETECTED",
+            params,
+            count: params.length,
+          })
+          .catch((error) => {
+            console.debug("Could not send message to tab", tabId, error);
+          });
+      },
+    });
+  });
 });
 
 /* ---- Tracking Type: 
@@ -62,16 +94,16 @@ chrome.webRequest.onBeforeRequest.addListener(
   {urls: ["<all_urls>"]}
 );
 
-/* ---- Tracking Type: 
-NETWORK TRACKER (Request-Level Tracking)
----- */
-
 /* --- Cleanup --- */
 // remove tracking count if tab is closed
 chrome.tabs.onRemoved.addListener(async (tabId: number) => {
   if (trackersCache.has(tabId)) {
     trackersCache.delete(tabId);
     chrome.storage.local.remove(`trackers_${tabId}`);
-    console.log(`Removed tracking for closed tab ${tabId}`);
+  }
+
+  if (urlParamsCache.has(tabId)) {
+    urlParamsCache.delete(tabId);
+    chrome.storage.local.remove(`urlParams_${tabId}`);
   }
 });
