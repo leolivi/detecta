@@ -1,4 +1,7 @@
 // ---- detect messages from service worker ---- //
+
+import {showSonnerNotification} from "@/ui/components/notification/show-notification";
+
 // Global set to avoid duplicate notifications
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   /* ---- Tracking Type: 
@@ -9,7 +12,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === "URL_PARAMS_DETECTED") {
-    console.log("Url:", message.params);
+    console.log("Url:", message.count);
+    showSonnerNotification(
+      `${message.count} URL Tracking detected: ${message.params}`,
+      "warning"
+    );
   }
   sendResponse({success: true, sender});
   return true;
