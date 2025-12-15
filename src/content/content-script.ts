@@ -1,7 +1,21 @@
-// ---- detect messages from service worker ---- //
-
 import {showSonnerNotification} from "@/ui/components/notification/show-notification";
+import {detectTrackingPixels} from "./tracking-pixel.content";
+import {observeDomChanges} from "./observe-dom-changes";
 
+/* ---- Initialisierung ---- */
+function init() {
+  detectTrackingPixels();
+  observeDomChanges();
+}
+
+// initialize if content is loaded
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+
+// ---- detect messages from service worker ---- //
 // Global set to avoid duplicate notifications
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   /* ---- Tracking Type: 
@@ -11,6 +25,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("NETWORK_TRACKER_DETECTED", message.count);
   }
 
+  /* ---- Tracking Type: 
+  THIRD PARTY TRACKERS (Content Script Events)
+  ---- */
   if (message.type === "URL_PARAMS_DETECTED") {
     console.log("URL_PARAMS_DETECTED", message.params);
     showSonnerNotification(

@@ -21,16 +21,17 @@ export function TrackingChart() {
       value: stats.urlParameters,
       fill: "var(--chart-2)",
     },
+    {
+      name: "Pixels",
+      value: stats.pixels,
+      fill: "var(--chart-4)",
+    },
     // {
     //   name: "iFrames",
     //   value: stats.iframes,
     //   fill: "var(--chart-3)",
     // },
     // {
-    //   name: "Pixels",
-    //   value: stats.pixels,
-    //   fill: "var(--chart-4)",
-    // },
     // {
     //   name: "Widgets",
     //   value: stats.widgets,

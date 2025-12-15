@@ -1,0 +1,28 @@
+.tooltip-content {
+  max-width: 300px;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+.tooltip-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
+
+.param-container {
+  max-height: 44px;
+  overflow: hidden;
+}
+
+.param-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
