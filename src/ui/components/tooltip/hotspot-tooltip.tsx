@@ -72,26 +72,18 @@ export function HotspotTooltip({
         </TooltipTrigger>
         <TooltipContent className="tooltip-content" side="top" sideOffset={5}>
           <div>
-            <div className="tooltip-title">
+            <p className="tooltip-title">
               ⚠️ {trackerCount > 1 && `${trackerCount}x `}
               {getMethodLabel(method)} Tracking
               {purpose && ` (${purpose})`}
-            </div>
-            <div
-              className="tooltip-text"
-              style={{
-                marginBottom: paramCount > 0 ? "8px" : "0",
-              }}
-            >
-              {sources}
-            </div>
+            </p>
             {paramCount > 0 && (
               <div className="param-container">
                 <div>Tracking Parameters ({paramCount}):</div>
                 {Object.entries(trackingParams).map(([key, value]) => (
-                  <div className="param-text" key={key}>
+                  <p className="param-text" key={key}>
                     <span>{key}</span>: {value}
-                  </div>
+                  </p>
                 ))}
               </div>
             )}

@@ -1,4 +1,4 @@
-import type {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
+import {TrackingMethod, type TrackerPurpose} from "@/types/tracking-enums";
 import {createRoot, type Root} from "react-dom/client";
 import {HotspotTooltip} from "../tooltip/hotspot-tooltip";
 
@@ -22,7 +22,8 @@ export function addHotspotWithTooltip(
   method: TrackingMethod,
   purpose?: TrackerPurpose | null
 ) {
-  const posKey = `${Math.round(x)},${Math.round(y)}`;
+  const posKey = `${Math.round(x)},${Math.round(y)}-${method}`;
+
   // already an existing hotspot in this position?
   const existing = hotspotRegistry.get(posKey);
 
@@ -46,8 +47,30 @@ export function addHotspotWithTooltip(
   // new hotspot
   const portal = document.createElement("div");
   portal.className = "tracking-hotspot-wrapper";
-  portal.style.left = `${x}px`;
-  portal.style.top = `${y}px`;
+
+  let xOffset = 0;
+  let yOffset = 0;
+
+  switch (method) {
+    case TrackingMethod.PIXEL:
+      portal.style.zIndex = "100000";
+      xOffset = 0;
+      yOffset = 0;
+      break;
+    case TrackingMethod.IFRAME:
+      portal.style.zIndex = "110000";
+      xOffset = 10;
+      yOffset = 10;
+      break;
+    default:
+      portal.style.zIndex = "100000";
+      xOffset = 0;
+      yOffset = 0;
+      break;
+  }
+
+  portal.style.left = `${x + xOffset}px`;
+  portal.style.top = `${y + yOffset}px`;
   document.body.appendChild(portal);
 
   const root = createRoot(portal);

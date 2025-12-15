@@ -1,4 +1,5 @@
 import {TRACKING_PARAMS} from "@/data/tracking-params";
+import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
 import {TrackingMethod} from "@/types/tracking-enums";
 import {addHotspotWithTooltip} from "@/ui/components/mark-tracking/add-hotspot-with-tooltip";
 
@@ -17,14 +18,12 @@ export async function detectTrackingPixels() {
     if (img.dataset.pixelAnalyzed) return;
     img.dataset.pixelAnalyzed = "true";
 
-    // is it a tiny pixel or a hidden image?
-    const isTiny = img.naturalWidth <= 1 && img.naturalHeight <= 1;
-    const isHidden =
-      img.style.display === "none" || img.style.visibility === "hidden";
-    if (!isTiny && !isHidden) return;
-
     const src = img.currentSrc || img.src;
     if (!src) return;
+
+    // skip if whitelisted
+    if (FALSE_POSITIVE_EXCLUSION_LIST.some((domain) => src.includes(domain)))
+      return;
 
     if (!looksLikeTrackingPixel(src)) return;
 
@@ -32,13 +31,12 @@ export async function detectTrackingPixels() {
     if (processedPixels.has(src)) return;
     processedPixels.add(src);
 
-    console.log("[PIXEL]", processedPixels.size, src);
-
     // inform service worker
     chrome.runtime.sendMessage({
       type: "PIXEL_TRACKER_DETECTED",
       key: src,
     });
+    console.log("[PIXEL]", processedPixels.size, src);
 
     // check if the pixel URL contains tracking parameters
     const trackingParams: Record<string, string> = {};
