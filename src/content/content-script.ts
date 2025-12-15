@@ -3,12 +3,14 @@ import {detectTrackingPixels} from "./tracking-pixel.content";
 import {observeDomChanges} from "./observe-dom-changes";
 import {detectTrackingIframes} from "./tracking-iframe.content";
 import {detectTrackingScripts} from "./tracking-script.content";
+import {detectTrackingSocialWidgets} from "./tracking-widget.content";
 
 /* ---- Initialisierung ---- */
 function init() {
   detectTrackingPixels();
   detectTrackingIframes();
   detectTrackingScripts();
+  detectTrackingSocialWidgets();
   observeDomChanges();
 }
 

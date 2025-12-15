@@ -18,19 +18,25 @@ export interface TrackerDomain {
 
 // map categories to match TrackerPurpose
 function mapToPurpose(categories: string[]): TrackerPurpose {
-  for (const cat of categories) {
-    if (cat.includes("Advertising") || cat.includes("Ad Motivated")) {
-      return TrackerPurpose.AD;
-    }
-    if (cat.includes("Analytics") || cat.includes("Audience Measurement")) {
-      return TrackerPurpose.ANALYTICS;
-    }
-    if (cat.includes("Social")) {
-      return TrackerPurpose.SOCIAL;
-    }
-    if (cat.includes("Affiliate")) {
-      return TrackerPurpose.AFFILIATE;
-    }
+  if (categories.some((cat) => cat.includes("Social"))) {
+    return TrackerPurpose.SOCIAL;
+  }
+  if (
+    categories.some(
+      (cat) => cat.includes("Advertising") || cat.includes("Ad Motivated")
+    )
+  ) {
+    return TrackerPurpose.AD;
+  }
+  if (
+    categories.some(
+      (cat) => cat.includes("Analytics") || cat.includes("Audience Measurement")
+    )
+  ) {
+    return TrackerPurpose.ANALYTICS;
+  }
+  if (categories.some((cat) => cat.includes("Affiliate"))) {
+    return TrackerPurpose.AFFILIATE;
   }
   return TrackerPurpose.UNKNOWN;
 }

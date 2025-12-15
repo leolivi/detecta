@@ -10,6 +10,7 @@ const urlParamsCache: Map<number, Set<string>> = new Map();
 const pixelCache: Map<number, Set<string>> = new Map();
 const iframeCache: Map<number, Set<string>> = new Map();
 const scriptCache: Map<number, Set<string>> = new Map();
+const widgetCache: Map<number, Set<string>> = new Map();
 
 // ---- INSTALLATION ---- //
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -31,6 +32,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     pixelCache.set(tabId, new Set());
     iframeCache.set(tabId, new Set());
     scriptCache.set(tabId, new Set());
+    widgetCache.set(tabId, new Set());
   }
 
   /* ---- Tracking Type: 
@@ -135,12 +137,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     scriptCache.get(tabId)!.add(message.key);
   }
 
+  if (message.type === "WIDGET_TRACKER_DETECTED") {
+    const tabId = sender.tab?.id;
+    if (!tabId) return;
+
+    if (!widgetCache.has(tabId)) {
+      widgetCache.set(tabId, new Set());
+    }
+
+    widgetCache.get(tabId)!.add(message.key);
+  }
+
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
     const networkRequests = trackersCache.get(message.tabId)?.size ?? 0;
     const urlParameters = urlParamsCache.get(message.tabId)?.size ?? 0;
     const pixels = pixelCache.get(message.tabId)?.size ?? 0;
     const iframes = iframeCache.get(message.tabId)?.size ?? 0;
     const scripts = scriptCache.get(message.tabId)?.size ?? 0;
+    const widgets = widgetCache.get(message.tabId)?.size ?? 0;
 
     sendResponse({
       networkRequests,
@@ -148,7 +162,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       pixels,
       iframes,
       scripts,
-      widgets: 0,
+      widgets,
       sender,
     });
     return true;
@@ -157,29 +171,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 /* --- Cleanup --- */
 // remove tracking count if tab is closed
+type CacheEntry = {
+  cache: Map<number, unknown>;
+  storageKey: (tabId: number) => string;
+};
+
+const TAB_CACHES: CacheEntry[] = [
+  {cache: trackersCache, storageKey: (id) => `trackers_${id}`},
+  {cache: urlParamsCache, storageKey: (id) => `urlParams_${id}`},
+  {cache: pixelCache, storageKey: (id) => `pixels_${id}`},
+  {cache: iframeCache, storageKey: (id) => `iframes_${id}`},
+  {cache: scriptCache, storageKey: (id) => `scripts_${id}`},
+  {cache: widgetCache, storageKey: (id) => `widgets_${id}`},
+];
+
 chrome.tabs.onRemoved.addListener(async (tabId: number) => {
-  if (trackersCache.has(tabId)) {
-    trackersCache.delete(tabId);
-    chrome.storage.local.remove(`trackers_${tabId}`);
-  }
+  for (const {cache, storageKey} of TAB_CACHES) {
+    if (!cache.has(tabId)) continue;
 
-  if (urlParamsCache.has(tabId)) {
-    urlParamsCache.delete(tabId);
-    chrome.storage.local.remove(`urlParams_${tabId}`);
-  }
-
-  if (pixelCache.has(tabId)) {
-    pixelCache.delete(tabId);
-    chrome.storage.local.remove(`pixels_${tabId}`);
-  }
-
-  if (iframeCache.has(tabId)) {
-    iframeCache.delete(tabId);
-    chrome.storage.local.remove(`iframes_${tabId}`);
-  }
-
-  if (scriptCache.has(tabId)) {
-    scriptCache.delete(tabId);
-    chrome.storage.local.remove(`scripts_${tabId}`);
+    cache.delete(tabId);
+    chrome.storage.local.remove(storageKey(tabId));
   }
 });

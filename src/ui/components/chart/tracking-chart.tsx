@@ -36,11 +36,11 @@ export function TrackingChart() {
       value: stats.scripts,
       fill: "var(--chart-5)",
     },
-    // {
-    //   name: "Widgets",
-    //   value: stats.widgets,
-    //   fill: "var(--chart-6)",
-    // },
+    {
+      name: "Widgets",
+      value: stats.widgets,
+      fill: "var(--chart-6)",
+    },
   ];
 
   const chartConfig = {

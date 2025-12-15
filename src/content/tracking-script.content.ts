@@ -1,7 +1,7 @@
 import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {TRACKING_PARAMS} from "@/data/tracking-params";
 import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
-import {TrackingMethod} from "@/types/tracking-enums";
+import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
 import {addHotspotWithTooltip} from "@/ui/components/mark-tracking/add-hotspot-with-tooltip";
 
 /* ---- Tracking Type: 
@@ -27,10 +27,20 @@ export async function detectTrackingScripts() {
       return;
 
     // check tracking domain lists
-    const trackerInfo = TRACKING_DOMAINS.find((tracker) =>
-      src.includes(tracker.domain)
-    );
+    const trackerInfo = TRACKING_DOMAINS.find((tracker) => {
+      try {
+        const url = new URL(src);
+        const hostname = url.hostname;
+        return (
+          hostname.includes(tracker.domain) || tracker.domain.includes(hostname)
+        );
+      } catch {
+        return src.includes(tracker.domain);
+      }
+    });
     if (!trackerInfo) return;
+
+    if (trackerInfo.purpose === TrackerPurpose.SOCIAL) return;
 
     // if already processed, skip, else add to src
     if (processedScripts.has(src)) return;
@@ -43,7 +53,7 @@ export async function detectTrackingScripts() {
     });
     console.log("[SCRIPT]", processedScripts.size, src);
 
-    // check if the iFrame URL contains tracking parameters
+    // check if the script URL contains tracking parameters
     const trackingParams: Record<string, string> = {};
     try {
       const url = new URL(src);
@@ -57,7 +67,7 @@ export async function detectTrackingScripts() {
         }
       });
     } catch (e) {
-      console.warn("Invalid iframe URL, cannot parse:", e);
+      console.warn("Invalid script URL, cannot parse:", e);
     }
 
     // display hotspot in the DOM
