@@ -1,10 +1,12 @@
 import {showSonnerNotification} from "@/ui/components/notification/show-notification";
 import {detectTrackingPixels} from "./tracking-pixel.content";
 import {observeDomChanges} from "./observe-dom-changes";
+import {detectTrackingIframes} from "./tracking-iframe.content";
 
 /* ---- Initialisierung ---- */
 function init() {
   detectTrackingPixels();
+  detectTrackingIframes();
   observeDomChanges();
 }
 

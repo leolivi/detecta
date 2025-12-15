@@ -1,3 +1,4 @@
+import {detectTrackingIframes} from "./tracking-iframe.content";
 import {detectTrackingPixels} from "./tracking-pixel.content";
 
 /* ---- DOM Observer ---- */
@@ -9,6 +10,8 @@ export function observeDomChanges() {
 
     timeout = window.setTimeout(() => {
       detectTrackingPixels();
+      detectTrackingIframes();
+      timeout = undefined;
     }, 300);
   });
 
