@@ -1,6 +1,7 @@
 import {detectTrackingIframes} from "./tracking-iframe.content";
 import {detectTrackingPixels} from "./tracking-pixel.content";
 import {detectTrackingScripts} from "./tracking-script.content";
+import {detectTrackingSocialWidgets} from "./tracking-widget.content";
 
 /* ---- DOM Observer ---- */
 export function observeDomChanges() {
@@ -13,6 +14,7 @@ export function observeDomChanges() {
       detectTrackingPixels();
       detectTrackingIframes();
       detectTrackingScripts();
+      detectTrackingSocialWidgets();
       timeout = undefined;
     }, 300);
   });
