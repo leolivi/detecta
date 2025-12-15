@@ -79,12 +79,7 @@ export function HotspotTooltip({
             </p>
             {paramCount > 0 && (
               <div className="param-container">
-                <div>Tracking Parameters ({paramCount}):</div>
-                {Object.entries(trackingParams).map(([key, value]) => (
-                  <p className="param-text" key={key}>
-                    <span>{key}</span>: {value}
-                  </p>
-                ))}
+                <div>Tracking Parameters ({paramCount})</div>
               </div>
             )}
           </div>

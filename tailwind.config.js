@@ -38,6 +38,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chart: {
+          1: "oklch(var(--chart-1))",
+          2: "oklch(var(--chart-2))",
+          3: "oklch(var(--chart-3))",
+          4: "oklch(var(--chart-4))",
+          5: "oklch(var(--chart-5))",
+          6: "oklch(var(--chart-6))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -47,4 +55,18 @@ export default {
     },
   },
   plugins: [],
+  safelist: [
+    "bg-chart-1",
+    "bg-chart-2",
+    "bg-chart-3",
+    "bg-chart-4",
+    "bg-chart-5",
+    "bg-chart-6",
+    "border-chart-1",
+    "border-chart-2",
+    "border-chart-3",
+    "border-chart-4",
+    "border-chart-5",
+    "border-chart-6",
+  ],
 };
