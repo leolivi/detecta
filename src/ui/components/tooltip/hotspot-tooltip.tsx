@@ -9,17 +9,18 @@ import {TrackingMethod, type TrackerPurpose} from "@/types/tracking-enums";
 import "./hotspot-tooltip.css";
 
 export function HotspotTooltip({
-  src,
+  sources,
   trackingParams,
   method,
   purpose,
 }: {
-  src: string;
+  sources: string[];
   trackingParams: Record<string, string>;
   method: TrackingMethod;
   purpose?: TrackerPurpose | null;
 }) {
   const paramCount = Object.keys(trackingParams).length;
+  const trackerCount = sources.length;
 
   // Helper to get readable method name
   const getMethodLabel = (method: TrackingMethod): string => {
@@ -72,7 +73,8 @@ export function HotspotTooltip({
         <TooltipContent className="tooltip-content" side="top" sideOffset={5}>
           <div>
             <div className="tooltip-title">
-              ⚠️ {getMethodLabel(method)} Tracking
+              ⚠️ {trackerCount > 1 && `${trackerCount}x `}
+              {getMethodLabel(method)} Tracking
               {purpose && ` (${purpose})`}
             </div>
             <div
@@ -81,7 +83,7 @@ export function HotspotTooltip({
                 marginBottom: paramCount > 0 ? "8px" : "0",
               }}
             >
-              {src}
+              {sources}
             </div>
             {paramCount > 0 && (
               <div className="param-container">
