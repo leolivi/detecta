@@ -5,21 +5,21 @@ import {TrackingMethod} from "@/types/tracking-enums";
 import {addHotspotWithTooltip} from "@/ui/components/mark-tracking/add-hotspot-with-tooltip";
 
 /* ---- Tracking Type: 
-   IFrame Tracking – THIRD PARTY COMPONENTS
+   Script Tracking – THIRD PARTY COMPONENTS
 ---- */
 
 // prevents double events
-const processedIframes = new Set<string>();
+const processedScripts = new Set<string>();
 
-/* ---- Tracking Type: IFrames ---- */
-export async function detectTrackingIframes() {
-  const iframes = document.querySelectorAll<HTMLImageElement>("iframe");
+/* ---- Tracking Type: Scripts ---- */
+export async function detectTrackingScripts() {
+  const scripts = document.querySelectorAll<HTMLScriptElement>("script[src]");
 
-  iframes.forEach((iframe) => {
-    if (iframe.dataset.iframeAnalyzed) return;
-    iframe.dataset.iframeAnalyzed = "true";
+  scripts.forEach((script) => {
+    if (script.dataset.scriptAnalyzed) return;
+    script.dataset.scriptAnalyzed = "true";
 
-    const src = iframe.src;
+    const src = script.src;
     if (!src) return;
 
     // if whitelisted, skip
@@ -33,15 +33,15 @@ export async function detectTrackingIframes() {
     if (!trackerInfo) return;
 
     // if already processed, skip, else add to src
-    if (processedIframes.has(src)) return;
-    processedIframes.add(src);
+    if (processedScripts.has(src)) return;
+    processedScripts.add(src);
 
     // inform service worker
     chrome.runtime.sendMessage({
-      type: "IFRAME_TRACKER_DETECTED",
+      type: "SCRIPT_TRACKER_DETECTED",
       key: src,
     });
-    console.log("[IFRAME]", processedIframes.size, src);
+    console.log("[SCRIPT]", processedScripts.size, src);
 
     // check if the iFrame URL contains tracking parameters
     const trackingParams: Record<string, string> = {};
@@ -61,20 +61,20 @@ export async function detectTrackingIframes() {
     }
 
     // display hotspot in the DOM
-    const rect = iframe.getBoundingClientRect();
+    const rect = script.getBoundingClientRect();
 
     addHotspotWithTooltip(
       src,
       rect.left + window.scrollX,
       rect.top + window.scrollY,
       trackingParams,
-      TrackingMethod.IFRAME,
+      TrackingMethod.SCRIPT,
       null
     );
 
     // console.log(
-    //   "[IFRAME]",
-    //   processedIframes.size,
+    //   "[SCRIPT]",
+    //   processedScripts.size,
     //   src,
     //   "Position:",
     //   rect.left,

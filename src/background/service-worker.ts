@@ -9,6 +9,7 @@ const trackersCache: Map<number, Set<string>> = new Map();
 const urlParamsCache: Map<number, Set<string>> = new Map();
 const pixelCache: Map<number, Set<string>> = new Map();
 const iframeCache: Map<number, Set<string>> = new Map();
+const scriptCache: Map<number, Set<string>> = new Map();
 
 // ---- INSTALLATION ---- //
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -29,6 +30,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     urlParamsCache.set(tabId, new Set());
     pixelCache.set(tabId, new Set());
     iframeCache.set(tabId, new Set());
+    scriptCache.set(tabId, new Set());
   }
 
   /* ---- Tracking Type: 
@@ -122,19 +124,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     iframeCache.get(tabId)!.add(message.key);
   }
 
+  if (message.type === "SCRIPT_TRACKER_DETECTED") {
+    const tabId = sender.tab?.id;
+    if (!tabId) return;
+
+    if (!scriptCache.has(tabId)) {
+      scriptCache.set(tabId, new Set());
+    }
+
+    scriptCache.get(tabId)!.add(message.key);
+  }
+
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
     const networkRequests = trackersCache.get(message.tabId)?.size ?? 0;
     const urlParameters = urlParamsCache.get(message.tabId)?.size ?? 0;
     const pixels = pixelCache.get(message.tabId)?.size ?? 0;
     const iframes = iframeCache.get(message.tabId)?.size ?? 0;
+    const scripts = scriptCache.get(message.tabId)?.size ?? 0;
 
     sendResponse({
       networkRequests,
       urlParameters,
       pixels,
       iframes,
+      scripts,
       widgets: 0,
-      scripts: 0,
       sender,
     });
     return true;
@@ -162,5 +176,10 @@ chrome.tabs.onRemoved.addListener(async (tabId: number) => {
   if (iframeCache.has(tabId)) {
     iframeCache.delete(tabId);
     chrome.storage.local.remove(`iframes_${tabId}`);
+  }
+
+  if (scriptCache.has(tabId)) {
+    scriptCache.delete(tabId);
+    chrome.storage.local.remove(`scripts_${tabId}`);
   }
 });

@@ -31,15 +31,14 @@ export function TrackingChart() {
       value: stats.iframes,
       fill: "var(--chart-4)",
     },
-    // {
+    {
+      name: "Scripts",
+      value: stats.scripts,
+      fill: "var(--chart-5)",
+    },
     // {
     //   name: "Widgets",
     //   value: stats.widgets,
-    //   fill: "var(--chart-5)",
-    // },
-    // {
-    //   name: "Scripts",
-    //   value: stats.scripts,
     //   fill: "var(--chart-6)",
     // },
   ];

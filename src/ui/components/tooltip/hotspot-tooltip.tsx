@@ -52,13 +52,13 @@ export function HotspotTooltip({
   const getColorClass = (): string => {
     switch (method) {
       case TrackingMethod.WIDGET:
-        return "blue";
-      case TrackingMethod.IFRAME:
-        return "green";
-      case TrackingMethod.PIXEL:
-        return "red";
+        return "chart-6";
       case TrackingMethod.SCRIPT:
-        return "yellow";
+        return "chart-5";
+      case TrackingMethod.IFRAME:
+        return "chart-4";
+      case TrackingMethod.PIXEL:
+        return "chart-3";
       default:
         return "";
     }
@@ -79,12 +79,7 @@ export function HotspotTooltip({
             </p>
             {paramCount > 0 && (
               <div className="param-container">
-                <div>Tracking Parameters ({paramCount}):</div>
-                {Object.entries(trackingParams).map(([key, value]) => (
-                  <p className="param-text" key={key}>
-                    <span>{key}</span>: {value}
-                  </p>
-                ))}
+                <div>Tracking Parameters ({paramCount})</div>
               </div>
             )}
           </div>

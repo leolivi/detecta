@@ -70,6 +70,18 @@ export async function detectTrackingPixels() {
       TrackingMethod.PIXEL,
       null
     );
+
+    // console.log(
+    //   "[PIXEL]",
+    //   processedPixels.size,
+    //   src,
+    //   "Position:",
+    //   rect.left,
+    //   rect.top,
+    //   "Size:",
+    //   rect.width,
+    //   rect.height
+    // );
   });
 }
 
