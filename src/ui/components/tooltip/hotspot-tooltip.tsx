@@ -52,13 +52,13 @@ export function HotspotTooltip({
   const getColorClass = (): string => {
     switch (method) {
       case TrackingMethod.WIDGET:
-        return "blue";
-      case TrackingMethod.IFRAME:
-        return "green";
-      case TrackingMethod.PIXEL:
-        return "red";
+        return "chart-6";
       case TrackingMethod.SCRIPT:
-        return "yellow";
+        return "chart-5";
+      case TrackingMethod.IFRAME:
+        return "chart-4";
+      case TrackingMethod.PIXEL:
+        return "chart-3";
       default:
         return "";
     }

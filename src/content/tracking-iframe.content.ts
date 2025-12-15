@@ -71,5 +71,17 @@ export async function detectTrackingIframes() {
       TrackingMethod.IFRAME,
       null
     );
+
+    // console.log(
+    //   "[IFRAME]",
+    //   processedIframes.size,
+    //   src,
+    //   "Position:",
+    //   rect.left,
+    //   rect.top,
+    //   "Size:",
+    //   rect.width,
+    //   rect.height
+    // );
   });
 }

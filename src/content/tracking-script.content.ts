@@ -71,5 +71,17 @@ export async function detectTrackingScripts() {
       TrackingMethod.SCRIPT,
       null
     );
+
+    // console.log(
+    //   "[SCRIPT]",
+    //   processedScripts.size,
+    //   src,
+    //   "Position:",
+    //   rect.left,
+    //   rect.top,
+    //   "Size:",
+    //   rect.width,
+    //   rect.height
+    // );
   });
 }
