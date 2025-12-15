@@ -48,23 +48,29 @@ export function addHotspotWithTooltip(
   const portal = document.createElement("div");
   portal.className = "tracking-hotspot-wrapper";
 
+  let xOffset = 0;
+  let yOffset = 0;
+
   switch (method) {
     case TrackingMethod.PIXEL:
       portal.style.zIndex = "100000";
+      xOffset = 0;
+      yOffset = 0;
       break;
     case TrackingMethod.IFRAME:
       portal.style.zIndex = "110000";
-      break;
-    case TrackingMethod.WIDGET:
-      portal.style.zIndex = "120000";
+      xOffset = 10;
+      yOffset = 10;
       break;
     default:
       portal.style.zIndex = "100000";
+      xOffset = 0;
+      yOffset = 0;
       break;
   }
 
-  portal.style.left = `${x}px`;
-  portal.style.top = `${y}px`;
+  portal.style.left = `${x + xOffset}px`;
+  portal.style.top = `${y + yOffset}px`;
   document.body.appendChild(portal);
 
   const root = createRoot(portal);

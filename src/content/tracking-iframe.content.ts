@@ -1,5 +1,6 @@
 import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {TRACKING_PARAMS} from "@/data/tracking-params";
+import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
 import {TrackingMethod} from "@/types/tracking-enums";
 import {addHotspotWithTooltip} from "@/ui/components/mark-tracking/add-hotspot-with-tooltip";
 
@@ -21,22 +22,26 @@ export async function detectTrackingIframes() {
     const src = iframe.src;
     if (!src) return;
 
+    // if whitelisted, skip
+    if (FALSE_POSITIVE_EXCLUSION_LIST.some((domain) => src.includes(domain)))
+      return;
+
+    // check tracking domain lists
+    const trackerInfo = TRACKING_DOMAINS.find((tracker) =>
+      src.includes(tracker.domain)
+    );
+    if (!trackerInfo) return;
+
     // if already processed, skip, else add to src
     if (processedIframes.has(src)) return;
     processedIframes.add(src);
-
-    console.log("[IFRAME]", processedIframes.size, src);
 
     // inform service worker
     chrome.runtime.sendMessage({
       type: "IFRAME_TRACKER_DETECTED",
       key: src,
     });
-
-    const trackerInfo = TRACKING_DOMAINS.find((tracker) =>
-      src.includes(tracker.domain)
-    );
-    if (!trackerInfo) return;
+    console.log("[IFRAME]", processedIframes.size, src);
 
     // check if the iFrame URL contains tracking parameters
     const trackingParams: Record<string, string> = {};
@@ -57,18 +62,14 @@ export async function detectTrackingIframes() {
 
     // display hotspot in the DOM
     const rect = iframe.getBoundingClientRect();
-    // only display visible rectangles
-    const isVisible = rect.width > 0 && rect.height > 0;
 
-    if (isVisible) {
-      addHotspotWithTooltip(
-        src,
-        rect.left + window.scrollX,
-        rect.top + window.scrollY,
-        trackingParams,
-        TrackingMethod.IFRAME,
-        null
-      );
-    }
+    addHotspotWithTooltip(
+      src,
+      rect.left + window.scrollX,
+      rect.top + window.scrollY,
+      trackingParams,
+      TrackingMethod.IFRAME,
+      null
+    );
   });
 }
