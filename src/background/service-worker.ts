@@ -7,6 +7,7 @@ import {checkUrlTrackingParams} from "./handle-tab-update";
 // per tab saving
 const trackersCache: Map<number, Set<string>> = new Map();
 const urlParamsCache: Map<number, Set<string>> = new Map();
+const pixelCache: Map<number, Set<string>> = new Map();
 
 // ---- INSTALLATION ---- //
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -25,10 +26,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.status === "loading" && changeInfo.url) {
     trackersCache.set(tabId, new Set());
     urlParamsCache.set(tabId, new Set());
+    pixelCache.set(tabId, new Set());
   }
 
   /* ---- Tracking Type: 
-  NETWORK TRACKER (Request-Level Tracking)
+  THIRD PARTY TRACKERS (Content Script Events)
   ---- */
 
   if (changeInfo.status !== "complete") return;
@@ -94,22 +96,34 @@ chrome.webRequest.onBeforeRequest.addListener(
   {urls: ["<all_urls>"]}
 );
 
-// react on message from tracking chart to get the tracker counts
+// react on message  to get the tracker counts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "PIXEL_TRACKER_DETECTED") {
+    const tabId = sender.tab?.id;
+    if (!tabId) return;
+
+    if (!pixelCache.has(tabId)) {
+      pixelCache.set(tabId, new Set());
+    }
+
+    pixelCache.get(tabId)!.add(message.key);
+  }
+
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
     const networkRequests = trackersCache.get(message.tabId)?.size ?? 0;
     const urlParameters = urlParamsCache.get(message.tabId)?.size ?? 0;
+    const pixels = pixelCache.get(message.tabId)?.size ?? 0;
 
     sendResponse({
       networkRequests,
       urlParameters,
+      pixels,
       iframes: 0,
-      pixels: 0,
       widgets: 0,
       scripts: 0,
       sender,
     });
-    return true; // keep channel open for async
+    return true;
   }
 });
 
@@ -124,5 +138,10 @@ chrome.tabs.onRemoved.addListener(async (tabId: number) => {
   if (urlParamsCache.has(tabId)) {
     urlParamsCache.delete(tabId);
     chrome.storage.local.remove(`urlParams_${tabId}`);
+  }
+
+  if (pixelCache.has(tabId)) {
+    pixelCache.delete(tabId);
+    chrome.storage.local.remove(`pixels${tabId}`);
   }
 });

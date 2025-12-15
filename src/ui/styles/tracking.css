@@ -1,0 +1,46 @@
+.tracking-hotspot-wrapper {
+  position: absolute;
+  z-index: 100000;
+  pointer-events: auto;
+}
+
+.tracking-hotspot {
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 0, 0, 0.3);
+  border: 2px solid red;
+  border-radius: 50%;
+}
+
+.blue {
+  background: rgba(5, 93, 145, 0.3);
+  border: 2px solid blue;
+}
+
+.green {
+  background: rgba(63, 145, 5, 0.3);
+  border: 2px solid green;
+}
+
+.tooltip-content {
+  background: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  max-width: 250px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.param-container {
+  margin-top: 4px;
+}
+
+.param-text {
+  font-size: 11px;
+}
