@@ -1,33 +1,67 @@
+import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
+import {changeCursor} from "./change-cursor";
 import {CursorStyles} from "@/types/cursor";
-import type {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
 
 // function add hover effect to tracked links
 export function addLinkHoverEffect(
-  link: HTMLAnchorElement,
+  element: HTMLElement,
   method: TrackingMethod | null,
   purpose: TrackerPurpose | null
 ) {
-  // asdd colored outline
-  link.style.setProperty("outline", `2px solid red`, "important");
-  link.style.setProperty("outline-offset", "2px", "important");
+  const cursorStyle = resolveCursorStyle(method, purpose);
 
-  // determine cursor (priority: purpose > method > unknown)
-  const cursorKey = toStyleKey(purpose || method) as keyof typeof CursorStyles;
-  const cursor = CursorStyles[cursorKey] || CursorStyles.UNKNOWN;
-
-  // hover behavior
-  link.addEventListener("mouseenter", () => {
-    link.style.cursor = cursor;
-  });
-  link.addEventListener("mouseleave", () => {
-    link.style.cursor = "pointer";
+  element.addEventListener("mouseenter", () => {
+    changeCursor(element, cursorStyle, method);
   });
 
-  // TODO: add tooltip?
+  element.addEventListener("mouseleave", () => {
+    changeCursor(element, CursorStyles.NORMAL, null);
+  });
 }
 
-// helper to ensure uppercase for cursor enum matching -> "url_decoration" -> "URL_DECORATION"
-function toStyleKey(value: string | null): string {
-  if (!value) return "UNKNOWN";
-  return value.toUpperCase();
+export function resolveCursorStyle(
+  method: TrackingMethod | null,
+  purpose: TrackerPurpose | null
+): CursorStyles {
+  if (method) {
+    switch (method) {
+      case TrackingMethod.AFFILIATE:
+        return CursorStyles.AFFILIATE;
+      case TrackingMethod.SHORTENER:
+        return CursorStyles.SHORTENER;
+      case TrackingMethod.REDIRECTOR:
+        return CursorStyles.REDIRECTOR;
+      case TrackingMethod.URL_DECORATION:
+        return CursorStyles.URL_DECORATION;
+    }
+  }
+
+  switch (purpose) {
+    case TrackerPurpose.AD:
+      return CursorStyles.AD;
+    case TrackerPurpose.ANALYTICS:
+      return CursorStyles.ANALYTICS;
+    case TrackerPurpose.SOCIAL:
+      return CursorStyles.SOCIAL;
+    default:
+      return CursorStyles.UNKNOWN;
+  }
+}
+
+// function add hover effect to tracked ads
+export function wrapIframeForHover(iframe: HTMLIFrameElement): HTMLElement {
+  iframe.style.pointerEvents = "none";
+
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = `
+    position: relative;
+    display: inline-block;
+    width: ${iframe.offsetWidth}px;
+    height: ${iframe.offsetHeight}px;
+  `;
+
+  iframe.parentNode?.insertBefore(wrapper, iframe);
+  wrapper.appendChild(iframe);
+
+  return wrapper;
 }

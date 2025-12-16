@@ -1,5 +1,6 @@
 import {REDIRECTOR_PARAMS} from "@/data/tracking-params";
 
+// TODO: needed still?
 // function to check if a URL is a redirector URL
 export function isRedirectURL(url: URL) {
   const params = new URLSearchParams(url.search);
