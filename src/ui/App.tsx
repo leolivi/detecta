@@ -1,6 +1,7 @@
 import "./styles/App.css";
 import logo from "../../public/logo32.png";
 import {TrackingChart} from "./components/chart/tracking-chart";
+import {Glossary} from "./components/glossary/glossary";
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <img src={logo} alt="detecta logo" />
       </div>
       <TrackingChart />
+      <Glossary />
     </>
   );
 }

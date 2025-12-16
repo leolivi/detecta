@@ -1,3 +1,4 @@
+import {analyzeLinks} from "./analyze-links.content";
 import {detectTrackingIframes} from "./tracking-iframe.content";
 import {detectTrackingPixels} from "./tracking-pixel.content";
 import {detectTrackingScripts} from "./tracking-script.content";
@@ -15,6 +16,7 @@ export function observeDomChanges() {
       detectTrackingIframes();
       detectTrackingScripts();
       detectTrackingSocialWidgets();
+      analyzeLinks();
       timeout = undefined;
     }, 300);
   });
