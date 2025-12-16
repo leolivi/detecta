@@ -7,6 +7,7 @@ interface HandleBeforeRequestArgs {
   onTrackerDetected: (count: number) => void;
 }
 
+// function to handle network request tracking
 export function handleBeforeRequest({
   tabId,
   details,

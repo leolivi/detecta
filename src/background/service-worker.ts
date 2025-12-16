@@ -3,7 +3,7 @@
 import {handleBeforeRequest} from "./handle-before-request";
 import {checkUrlTrackingParams} from "./handle-tab-update";
 
-// ---- IN-MEMORY CACHE ---- //
+/* ---- IN-MEMORY CACHE ---- */
 // per tab saving
 // tracking method
 const trackersCache: Map<number, Set<string>> = new Map();
@@ -14,7 +14,7 @@ const scriptCache: Map<number, Set<string>> = new Map();
 const widgetCache: Map<number, Set<string>> = new Map();
 const linkCache: Map<number, Set<string>> = new Map();
 
-// ---- INSTALLATION ---- //
+/* ---- INSTALLATION ---- */
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log("Extension started");
 
@@ -40,7 +40,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }
 
   /* ---- Tracking Type: 
-  THIRD PARTY TRACKERS (Content Script Events)
+    URL-Decoration & Attribution Tracker
   ---- */
 
   if (changeInfo.status !== "complete") return;

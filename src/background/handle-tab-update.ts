@@ -7,6 +7,7 @@ interface CheckUrlTrackingParamsArgs {
   onParamsDetected: (params: string[]) => void;
 }
 
+// function to handle url tracking params
 export function checkUrlTrackingParams({
   tabId,
   urlString,
@@ -24,6 +25,7 @@ export function checkUrlTrackingParams({
   const params = url.searchParams;
   const foundParams: string[] = [];
 
+  // check if there are params found
   for (const key of params.keys()) {
     if (TRACKING_PARAMS.some((prefix) => key.startsWith(prefix))) {
       foundParams.push(key);
@@ -32,6 +34,7 @@ export function checkUrlTrackingParams({
 
   if (foundParams.length === 0) return;
 
+  // set tabId if none is already set
   let paramsSet = urlParamsCache.get(tabId);
   if (!paramsSet) {
     paramsSet = new Set();
@@ -40,6 +43,7 @@ export function checkUrlTrackingParams({
 
   let changed = false;
 
+  // increment in memory counter of params
   for (const param of foundParams) {
     if (!paramsSet.has(param)) {
       paramsSet.add(param);

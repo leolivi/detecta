@@ -53,8 +53,9 @@ export const TRACKING_DOMAINS: TrackerDomain[] = trackerData.trackers.map(
   })
 );
 
+// TODO: if not needed:
 // helpter function to get tracker purpose by domain
-export function getTrackerPurpose(domain: string): TrackerPurpose | null {
-  const tracker = TRACKING_DOMAINS.find((t) => domain.includes(t.domain));
-  return tracker ? tracker.purpose : null;
-}
+// export function getTrackerPurpose(domain: string): TrackerPurpose | null {
+//   const tracker = TRACKING_DOMAINS.find((t) => domain.includes(t.domain));
+//   return tracker ? tracker.purpose : null;
+// }

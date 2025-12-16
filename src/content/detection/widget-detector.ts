@@ -1,7 +1,8 @@
-import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
+import {notifyServiceWorker} from "@/utils/tracking-helpers";
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
-import {addHotspotWithTooltip} from "@/ui/components/mark-tracking/add-hotspot-with-tooltip";
+import {TRACKING_DOMAINS} from "@/data/tracking-domains";
+import type {DetectionResult} from "@/types/detection-result";
 
 /* ---- Tracking Type: 
    Social Media Widget Tracking – THIRD PARTY COMPONENTS
@@ -11,7 +12,8 @@ import {addHotspotWithTooltip} from "@/ui/components/mark-tracking/add-hotspot-w
 const processedWidgets = new Set<string>();
 
 /* ---- Tracking Type: SOCIAL MEDIA Widget ---- */
-export async function detectTrackingSocialWidgets() {
+export function detectTrackingWidgets(): DetectionResult[] {
+  const results: DetectionResult[] = [];
   const widgets = document.querySelectorAll<HTMLElement>(
     'div[class*="fb-"], div[class*="twitter-"], div[id*="fb-root"], a[class*="share"]'
   );
@@ -25,50 +27,31 @@ export async function detectTrackingSocialWidgets() {
     const src = iframe?.src || "";
 
     if (src) {
-      // if whitelisted, skip
+      // if false positive, skip
       if (FALSE_POSITIVE_EXCLUSION_LIST.some((d) => src.includes(d))) return;
-
       const trackerInfo = TRACKING_DOMAINS.find((t) => src.includes(t.domain));
       if (trackerInfo?.purpose !== TrackerPurpose.SOCIAL) return;
     }
 
     const key =
-      src ||
-      `Social widget: ${widget.tagName}.${widget.className || widget.id}`;
+      src || `widget-${widget.tagName}.${widget.className || widget.id}`;
 
     // if already processed, skip, else add to src
     if (processedWidgets.has(key)) return;
     processedWidgets.add(key);
 
     // inform service worker
-    chrome.runtime.sendMessage({
-      type: "WIDGET_TRACKER_DETECTED",
-      key: key,
+    notifyServiceWorker("WIDGET_TRACKER_DETECTED", key);
+
+    results.push({
+      element: widget,
+      url: src,
+      method: TrackingMethod.WIDGET,
+      purpose: TrackerPurpose.SOCIAL,
+      params: {},
     });
     console.log("[SOME WIDGET]", processedWidgets.size, key);
-
-    // display hotspot in the DOM
-    const rect = widget.getBoundingClientRect();
-
-    addHotspotWithTooltip(
-      src,
-      rect.left + window.scrollX,
-      rect.top + window.scrollY,
-      {},
-      TrackingMethod.WIDGET,
-      TrackerPurpose.SOCIAL
-    );
-
-    // console.log(
-    //   "[SOME WIDGET]",
-    //   processedWidgets.size,
-    //   src,
-    //   "Position:",
-    //   rect.left,
-    //   rect.top,
-    //   "Size:",
-    //   rect.width,
-    //   rect.height
-    // );
   });
+
+  return results;
 }

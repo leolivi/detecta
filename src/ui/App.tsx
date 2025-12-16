@@ -1,5 +1,5 @@
 import "./styles/App.css";
-import logo from "../../public/logo32.png";
+import logo from "../../public/img/logo/logo32.png";
 import {TrackingChart} from "./components/chart/tracking-chart";
 import {Glossary} from "./components/glossary/glossary";
 

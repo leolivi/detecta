@@ -9,6 +9,7 @@ interface TrackingStats {
   scripts: number;
 }
 
+// tracker chart hook
 export function useTrackingStats() {
   const [stats, setStats] = useState<TrackingStats>({
     networkRequests: 0,
