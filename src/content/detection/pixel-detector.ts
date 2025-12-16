@@ -5,6 +5,7 @@ import {
 import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
 import {TrackingMethod} from "@/types/tracking-enums";
 import type {DetectionResult} from "@/types/detection-result";
+import {TRACKING_PIXEL_KEYWORDS} from "@/data/tracking-params";
 
 /* ---- Tracking Type: 
    Tracking Pixels – THIRD PARTY COMPONENTS
@@ -53,11 +54,14 @@ export function detectTrackingPixels(): DetectionResult[] {
 // helper fuction to detect pixels
 function looksLikeTrackingPixel(src: string): boolean {
   const lower = src.toLowerCase();
-  return (
-    lower.includes("pixel") ||
-    lower.includes("track") ||
-    lower.includes("impression") ||
-    lower.includes("analytics") ||
-    lower.startsWith("data:image")
-  );
+
+  if (TRACKING_PIXEL_KEYWORDS.prefix.some((p: string) => lower.startsWith(p))) {
+    return true;
+  }
+
+  if (TRACKING_PIXEL_KEYWORDS.includes.some((t: string) => lower.includes(t))) {
+    return true;
+  }
+
+  return false;
 }

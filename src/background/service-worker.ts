@@ -1,8 +1,8 @@
 /// <reference types="chrome" />
+import {handleNetworkRequests} from "./handlers/handle-before-request";
+import {handleTabRequests} from "./handlers/handle-tab-update";
 
-import {handleBeforeRequest} from "./handle-before-request";
-import {checkUrlTrackingParams} from "./handle-tab-update";
-
+// TODO: maybe simplify this code?
 /* ---- IN-MEMORY CACHE ---- */
 // per tab saving
 // tracking method
@@ -47,7 +47,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
   chrome.tabs.get(tabId, (tab) => {
     if (!tab?.url) return;
-    checkUrlTrackingParams({
+    handleTabRequests({
       tabId,
       urlString: tab.url,
       urlParamsCache,
@@ -83,7 +83,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 
     if (details.url.includes("chrome-extension://")) return;
 
-    handleBeforeRequest({
+    handleNetworkRequests({
       tabId,
       details,
       trackersCache,

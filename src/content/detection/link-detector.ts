@@ -4,10 +4,11 @@ import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {AFFILIATE_PARAMS, URL_SHORTENER_PARAMS} from "@/data/tracking-params";
 import {
   extractTrackingParams,
+  isRedirectURL,
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
 import type {DetectionResult} from "@/types/detection-result";
-import {isRedirectURL} from "@/utils/is-redirector";
+import {IS_SOCIAL_DOMAIN} from "@/data/false-positive-list";
 
 /* ---- Tracking Type: 
   Click Based Link Tracking 
@@ -49,27 +50,18 @@ export function detectTrackingLinks(): DetectionResult[] {
         purpose = trackerInfo.purpose;
 
         // skip social domains without tracking params
-        const isSocialDomain = [
-          "facebook.com",
-          "twitter.com",
-          "instagram.com",
-          "youtube.com",
-          "twitch.tv",
-          "linkedin.com",
-          "tiktok.com",
-          "snapchat.com",
-        ].some((d) => url.hostname.includes(d));
+        IS_SOCIAL_DOMAIN.some((d) => url.hostname.includes(d));
 
         // if it's a social-domain with NO Tracking Params, skip
         if (
-          isSocialDomain &&
+          IS_SOCIAL_DOMAIN &&
           Object.keys(params).length === 0 &&
           !hasTrackingHash
         ) {
           return;
         }
         //  else mark as social tracker
-        if (isSocialDomain) purpose = TrackerPurpose.SOCIAL;
+        if (IS_SOCIAL_DOMAIN) purpose = TrackerPurpose.SOCIAL;
       }
 
       // determine tracking method
@@ -84,10 +76,10 @@ export function detectTrackingLinks(): DetectionResult[] {
         method = TrackingMethod.AFFILIATE;
       } else if (URL_SHORTENER_PARAMS.some((s) => url.hostname.includes(s))) {
         method = TrackingMethod.SHORTENER;
-      } else if (isRedirectURL(url)) {
-        method = TrackingMethod.REDIRECTOR;
       } else if (Object.keys(params).length > 0 || hasTrackingHash) {
         method = TrackingMethod.URL_DECORATION;
+      } else if (!method && isRedirectURL(url)) {
+        method = TrackingMethod.REDIRECTOR;
       }
 
       // skip if no tracking detected

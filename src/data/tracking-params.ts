@@ -262,3 +262,57 @@ export const AFFILIATE_PARAMS: string[] = [
   "clickid",
   "afftrack",
 ];
+
+/* -----
+  Known tracker pixel dataset 
+  sources:
+  - Source: Chat GPT
+----- */
+
+export const TRACKING_PIXEL_KEYWORDS = {
+  prefix: ["data:image"],
+  includes: [
+    "pixel",
+    "track",
+    "tracking",
+    "impression",
+    "beacon",
+    "collect",
+    "measure",
+    "stats",
+    "stat",
+    "event",
+    "hit",
+    "log",
+  ],
+};
+
+/* -----
+  Known ad keywords dataset 
+  sources:
+  - Source: Chat GPT
+----- */
+
+export const AD_KEYWORDS = [
+  "ad",
+  "ads",
+  "advert",
+  "advertising",
+  "advertisement",
+  "doubleclick",
+  "adservice",
+  "adserver",
+  "adtech",
+  "adform",
+  "adnxs",
+  "criteo",
+  "outbrain",
+  "taboola",
+  "promoted",
+  "sponsored",
+  "campaign",
+  "placement",
+  "creative",
+  "media",
+  "banner",
+];

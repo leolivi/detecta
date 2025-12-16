@@ -1,3 +1,4 @@
+import {AD_KEYWORDS} from "@/data/tracking-params";
 import type {DetectionResult} from "@/types/detection-result";
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
 import {
@@ -55,14 +56,7 @@ function isAdvertisement(iframe: HTMLIFrameElement): boolean {
   const id = iframe.id || "";
   const title = iframe.title || "";
 
-  const adKeywords = [
-    "ads",
-    "doubleclick",
-    "googlesyndication",
-    "safeframe",
-    "adnxs",
-  ];
-  const srcMatch = adKeywords.some((kw) => src.includes(kw));
+  const srcMatch = AD_KEYWORDS.some((kw) => src.includes(kw));
   const attrMatch =
     id.toLowerCase().includes("ad") || title.toLowerCase().includes("ad");
   const emptyButLikelyAd = (!src || src === "about:blank") && attrMatch;

@@ -1,4 +1,4 @@
-import {TRACKING_PARAMS} from "@/data/tracking-params";
+import {REDIRECTOR_PARAMS, TRACKING_PARAMS} from "@/data/tracking-params";
 
 // checks if a tracker comes with params
 export function extractTrackingParams(url: string): Record<string, string> {
@@ -28,4 +28,18 @@ export function notifyServiceWorker(type: string, key: string): void {
   } catch (e) {
     console.warn("Service Worker could not be notified", e);
   }
+}
+
+// function to check if a URL is a redirector URL
+export function isRedirectURL(url: URL) {
+  for (const [key, value] of url.searchParams.entries()) {
+    const k = key.toLowerCase();
+
+    // clear redirect param
+    if (REDIRECTOR_PARAMS.includes(k)) return true;
+
+    // target url as a param
+    if (/^https?:\/\//i.test(value)) return true;
+  }
+  return false;
 }
