@@ -1,20 +1,76 @@
 /// <reference types="chrome" />
+import {handleNetworkRequests} from "./handlers/handle-network-requests";
+import {handleUrlParams} from "./handlers/handle-url-params";
 
-import {handleBeforeRequest} from "./handle-before-request";
-import {checkUrlTrackingParams} from "./handle-tab-update";
+/* ---- CACHE MANAGER ---- */
+class TrackerCache {
+  // they are used by handler functions
+  trackers = new Map<number, Set<string>>();
+  urlParams = new Map<number, Set<string>>();
 
-// ---- IN-MEMORY CACHE ---- //
-// per tab saving
-// tracking method
-const trackersCache: Map<number, Set<string>> = new Map();
-const urlParamsCache: Map<number, Set<string>> = new Map();
-const pixelCache: Map<number, Set<string>> = new Map();
-const iframeCache: Map<number, Set<string>> = new Map();
-const scriptCache: Map<number, Set<string>> = new Map();
-const widgetCache: Map<number, Set<string>> = new Map();
-const linkCache: Map<number, Set<string>> = new Map();
+  // they are used by content script messages
+  private pixels = new Map<number, Set<string>>();
+  private iframes = new Map<number, Set<string>>();
+  private scripts = new Map<number, Set<string>>();
+  private widgets = new Map<number, Set<string>>();
+  private links = new Map<number, Set<string>>();
 
-// ---- INSTALLATION ---- //
+  add(
+    type: "pixels" | "iframes" | "scripts" | "widgets" | "links",
+    tabId: number,
+    key: string
+  ): void {
+    if (!this[type].has(tabId)) {
+      this[type].set(tabId, new Set());
+    }
+    this[type].get(tabId)!.add(key);
+  }
+
+  getAllCounts(tabId: number) {
+    return {
+      networkRequests: this.trackers.get(tabId)?.size ?? 0,
+      urlParameters: this.urlParams.get(tabId)?.size ?? 0,
+      pixels: this.pixels.get(tabId)?.size ?? 0,
+      iframes: this.iframes.get(tabId)?.size ?? 0,
+      scripts: this.scripts.get(tabId)?.size ?? 0,
+      widgets: this.widgets.get(tabId)?.size ?? 0,
+      links: this.links.get(tabId)?.size ?? 0,
+    };
+  }
+
+  reset(tabId: number): void {
+    this.trackers.set(tabId, new Set());
+    this.urlParams.set(tabId, new Set());
+    this.pixels.set(tabId, new Set());
+    this.iframes.set(tabId, new Set());
+    this.scripts.set(tabId, new Set());
+    this.widgets.set(tabId, new Set());
+    this.links.set(tabId, new Set());
+  }
+
+  clear(tabId: number): void {
+    this.trackers.delete(tabId);
+    this.urlParams.delete(tabId);
+    this.pixels.delete(tabId);
+    this.iframes.delete(tabId);
+    this.scripts.delete(tabId);
+    this.widgets.delete(tabId);
+    this.links.delete(tabId);
+  }
+}
+
+const cache = new TrackerCache();
+
+/* ---- MESSAGE TYPE MAPPING ---- */
+const MESSAGE_TO_CACHE_TYPE = {
+  PIXEL_TRACKER_DETECTED: "pixels",
+  IFRAME_TRACKER_DETECTED: "iframes",
+  SCRIPT_TRACKER_DETECTED: "scripts",
+  WIDGET_TRACKER_DETECTED: "widgets",
+  LINK_TRACKER_DETECTED: "links",
+} as const;
+
+/* ---- INSTALLATION ---- */
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log("Extension started");
 
@@ -25,37 +81,29 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
-/* ---- RESET on Update ---- */
+/* ---- TAB UPDATE HANDLER ---- */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-  // reset counter when page is reloading
+  // Reset cache when page is loading
   if (changeInfo.status === "loading" && changeInfo.url) {
-    trackersCache.set(tabId, new Set());
-    urlParamsCache.set(tabId, new Set());
-    pixelCache.set(tabId, new Set());
-    iframeCache.set(tabId, new Set());
-    scriptCache.set(tabId, new Set());
-    widgetCache.set(tabId, new Set());
-    widgetCache.set(tabId, new Set());
-    linkCache.set(tabId, new Set());
+    cache.reset(tabId);
   }
-
-  /* ---- Tracking Type: 
-  THIRD PARTY TRACKERS (Content Script Events)
-  ---- */
 
   if (changeInfo.status !== "complete") return;
 
+  /* ---- Tracking Type: 
+    URL-Decoration & Attribution Tracker
+  ---- */
+  // Handle URL parameter tracking
   chrome.tabs.get(tabId, (tab) => {
     if (!tab?.url) return;
-    checkUrlTrackingParams({
+
+    handleUrlParams({
       tabId,
       urlString: tab.url,
-      urlParamsCache,
+      urlParamsCache: cache.urlParams,
       onParamsDetected: (params) => {
-        // save params to storage
-        chrome.storage.local.set({
-          [`urlParams_${tabId}`]: params,
-        });
+        chrome.storage.local.set({[`urlParams_${tabId}`]: params});
+
         // notify content script
         chrome.tabs
           .sendMessage(tabId, {
@@ -74,27 +122,26 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 /* ---- Tracking Type: 
 NETWORK TRACKER (Request-Level Tracking)
 ---- */
+/* ---- NETWORK REQUEST HANDLER ---- */
 
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
-    // ignore requests without a tabId
     const tabId = details.tabId;
-    if (tabId < 0) return;
+    if (tabId < 0 || details.url.includes("chrome-extension://")) return;
 
-    if (details.url.includes("chrome-extension://")) return;
-
-    handleBeforeRequest({
+    handleNetworkRequests({
       tabId,
       details,
-      trackersCache,
-      onTrackerDetected: (count) => {
-        // save tracker count to storage
+      trackersCache: cache.trackers,
+      onTrackerDetected: (count, domain) => {
         chrome.storage.local.set({[`trackers_${tabId}`]: count});
+
         // notify content script
         chrome.tabs
           .sendMessage(tabId, {
             type: "NETWORK_TRACKER_DETECTED",
             count,
+            domain,
           })
           .catch(() => {
             console.warn("No content script available in this tab");
@@ -106,106 +153,40 @@ chrome.webRequest.onBeforeRequest.addListener(
   {urls: ["<all_urls>"]}
 );
 
-// react on message  to get the tracker counts
+/* ---- MESSAGE HANDLER ---- */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "PIXEL_TRACKER_DETECTED") {
-    const tabId = sender.tab?.id;
-    if (!tabId) return;
+  const tabId = sender.tab?.id;
 
-    if (!pixelCache.has(tabId)) {
-      pixelCache.set(tabId, new Set());
-    }
-
-    pixelCache.get(tabId)!.add(message.key);
+  // handle tracker detection messages
+  const cacheType =
+    MESSAGE_TO_CACHE_TYPE[message.type as keyof typeof MESSAGE_TO_CACHE_TYPE];
+  if (cacheType && tabId) {
+    cache.add(cacheType, tabId, message.key);
+    return;
   }
 
-  if (message.type === "IFRAME_TRACKER_DETECTED") {
-    const tabId = sender.tab?.id;
-    if (!tabId) return;
-
-    if (!iframeCache.has(tabId)) {
-      iframeCache.set(tabId, new Set());
-    }
-
-    iframeCache.get(tabId)!.add(message.key);
-  }
-
-  if (message.type === "SCRIPT_TRACKER_DETECTED") {
-    const tabId = sender.tab?.id;
-    if (!tabId) return;
-
-    if (!scriptCache.has(tabId)) {
-      scriptCache.set(tabId, new Set());
-    }
-
-    scriptCache.get(tabId)!.add(message.key);
-  }
-
-  if (message.type === "WIDGET_TRACKER_DETECTED") {
-    const tabId = sender.tab?.id;
-    if (!tabId) return;
-
-    if (!widgetCache.has(tabId)) {
-      widgetCache.set(tabId, new Set());
-    }
-
-    widgetCache.get(tabId)!.add(message.key);
-  }
-
-  if (message.type === "LINK_TRACKER_DETECTED") {
-    const tabId = sender.tab?.id;
-    if (!tabId) return;
-
-    if (!linkCache.has(tabId)) {
-      linkCache.set(tabId, new Set());
-    }
-
-    linkCache.get(tabId)!.add(message.key);
-  }
-
+  // handle get counts request
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
-    const networkRequests = trackersCache.get(message.tabId)?.size ?? 0;
-    const urlParameters = urlParamsCache.get(message.tabId)?.size ?? 0;
-    const pixels = pixelCache.get(message.tabId)?.size ?? 0;
-    const iframes = iframeCache.get(message.tabId)?.size ?? 0;
-    const scripts = scriptCache.get(message.tabId)?.size ?? 0;
-    const widgets = widgetCache.get(message.tabId)?.size ?? 0;
-
-    sendResponse({
-      networkRequests,
-      urlParameters,
-      pixels,
-      iframes,
-      scripts,
-      widgets,
-      sender,
-    });
+    const counts = cache.getAllCounts(message.tabId);
+    sendResponse({...counts, sender});
     return true;
   }
 });
 
-/* --- Cleanup --- */
-// remove tracking count if tab is closed
-type CacheEntry = {
-  cache: Map<number, unknown>;
-  storageKey: (tabId: number) => string;
-};
-
-const TAB_CACHES: CacheEntry[] = [
-  {cache: trackersCache, storageKey: (id) => `trackers_${id}`},
-  {cache: urlParamsCache, storageKey: (id) => `urlParams_${id}`},
-  {cache: pixelCache, storageKey: (id) => `pixels_${id}`},
-  {cache: iframeCache, storageKey: (id) => `iframes_${id}`},
-  {cache: scriptCache, storageKey: (id) => `scripts_${id}`},
-  {cache: widgetCache, storageKey: (id) => `widgets_${id}`},
-  {cache: linkCache, storageKey: (id) => `links_${id}`},
-];
-
+/* ---- TAB CLEANUP ---- */
 chrome.tabs.onRemoved.addListener(async (tabId: number) => {
-  for (const {cache, storageKey} of TAB_CACHES) {
-    if (!cache.has(tabId)) continue;
+  cache.clear(tabId);
 
-    cache.delete(tabId);
-    chrome.storage.local.remove(storageKey(tabId));
-  }
+  // remove from storage
+  const keysToRemove = [
+    "trackers",
+    "urlParams",
+    "pixels",
+    "iframes",
+    "scripts",
+    "widgets",
+    "links",
+  ].map((type) => `${type}_${tabId}`);
+
+  chrome.storage.local.remove(keysToRemove);
 });

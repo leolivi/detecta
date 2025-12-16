@@ -1,18 +1,33 @@
+import {markTracking} from "@/utils/mark-tracking";
+
 import {showSonnerNotification} from "@/ui/components/notification/show-notification";
-import {detectTrackingPixels} from "./tracking-pixel.content";
-import {observeDomChanges} from "./observe-dom-changes";
-import {detectTrackingIframes} from "./tracking-iframe.content";
-import {detectTrackingScripts} from "./tracking-script.content";
-import {detectTrackingSocialWidgets} from "./tracking-widget.content";
-import {analyzeLinks} from "./analyze-links.content";
+import {detectTrackingLinks} from "./detection/link-detector";
+import {
+  detectAdvertisements,
+  redetectAdsByDomain,
+} from "./detection/ad-detector";
+import {detectTrackingScripts} from "./detection/script-detector";
+import {detectTrackingPixels} from "./detection/pixel-detector";
+import {detectTrackingIframes} from "./detection/iframe-detector";
+import {detectTrackingWidgets} from "./detection/widget-detector";
+import {observeDomChanges} from "../utils/observe-dom-changes";
+
+export function runAllDetections(): void {
+  const allResults = [
+    ...detectTrackingLinks(),
+    ...detectAdvertisements(),
+    ...detectTrackingPixels(),
+    ...detectTrackingIframes(),
+    ...detectTrackingScripts(),
+    ...detectTrackingWidgets(),
+  ];
+
+  markTracking(allResults);
+}
 
 /* ---- Initialisierung ---- */
-function init() {
-  detectTrackingPixels();
-  detectTrackingIframes();
-  detectTrackingScripts();
-  detectTrackingSocialWidgets();
-  analyzeLinks();
+function init(): void {
+  runAllDetections();
   observeDomChanges();
 }
 
@@ -24,25 +39,33 @@ if (document.readyState === "loading") {
 }
 
 // ---- detect messages from service worker ---- //
-// Global set to avoid duplicate notifications
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // check if extension context is still valid
+  if (!chrome.runtime?.id) {
+    console.log("Extension context invalidated, skipping message");
+    return false;
+  }
+
   /* ---- Tracking Type: 
     NETWORK TRACKER (Request-Level Tracking)
   ---- */
   if (message.type === "NETWORK_TRACKER_DETECTED") {
+    const adResults = redetectAdsByDomain(message.domain);
+    markTracking(adResults);
     console.log("NETWORK_TRACKER_DETECTED", message.count);
   }
 
   /* ---- Tracking Type: 
-  THIRD PARTY TRACKERS (Content Script Events)
+    URL-Decoration & Attribution Tracker
   ---- */
   if (message.type === "URL_PARAMS_DETECTED") {
-    console.log("URL_PARAMS_DETECTED", message.params);
     showSonnerNotification(
       `${message.count} URL Tracking detected: ${message.params}`,
       "warning"
     );
+    console.log("URL_PARAMS_DETECTED", message.count);
   }
+
   sendResponse({success: true, sender});
   return true;
 });

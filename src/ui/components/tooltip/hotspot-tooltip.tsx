@@ -6,7 +6,7 @@ import {
 } from "@radix-ui/react-tooltip";
 import "../../styles/tracking.css";
 import {TrackingMethod, type TrackerPurpose} from "@/types/tracking-enums";
-import "./hotspot-tooltip.css";
+import "../../styles/hotspot-tooltip.css";
 
 export function HotspotTooltip({
   sources,

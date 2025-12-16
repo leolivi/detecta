@@ -12,7 +12,6 @@ export function Glossary() {
   return (
     <div>
       <h2 className="text-lg font-semibold">Click-based Tracking Glossary</h2>
-
       <div className="pb-10 pt-4">
         <Table>
           <TableHeader>
