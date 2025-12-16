@@ -170,7 +170,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const iframes = iframeCache.get(message.tabId)?.size ?? 0;
     const scripts = scriptCache.get(message.tabId)?.size ?? 0;
     const widgets = widgetCache.get(message.tabId)?.size ?? 0;
-    const links = linkCache.get(message.tabId)?.size ?? 0;
 
     sendResponse({
       networkRequests,
@@ -179,7 +178,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       iframes,
       scripts,
       widgets,
-      links,
       sender,
     });
     return true;

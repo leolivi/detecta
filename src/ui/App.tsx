@@ -12,6 +12,16 @@ function App() {
       </div>
       <TrackingChart />
       <Glossary />
+      {/* TODO:  add explanations as a component or as a tooltip?*/}
+      <div className="pt-3">
+        <h2 className="text-lg font-semibold">Explanations</h2>
+        <p className="text-sm text-muted-foreground">
+          Embedded Tracker are trackers that...
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Click-based Tracker are trackers that...
+        </p>
+      </div>
     </>
   );
 }

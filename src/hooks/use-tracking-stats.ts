@@ -7,7 +7,6 @@ interface TrackingStats {
   pixels: number;
   widgets: number;
   scripts: number;
-  links: number;
 }
 
 export function useTrackingStats() {
@@ -18,7 +17,6 @@ export function useTrackingStats() {
     pixels: 0,
     widgets: 0,
     scripts: 0,
-    links: 0,
   });
 
   // get data from local storage
