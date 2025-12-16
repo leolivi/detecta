@@ -5,12 +5,14 @@ import {checkUrlTrackingParams} from "./handle-tab-update";
 
 // ---- IN-MEMORY CACHE ---- //
 // per tab saving
+// tracking method
 const trackersCache: Map<number, Set<string>> = new Map();
 const urlParamsCache: Map<number, Set<string>> = new Map();
 const pixelCache: Map<number, Set<string>> = new Map();
 const iframeCache: Map<number, Set<string>> = new Map();
 const scriptCache: Map<number, Set<string>> = new Map();
 const widgetCache: Map<number, Set<string>> = new Map();
+const linkCache: Map<number, Set<string>> = new Map();
 
 // ---- INSTALLATION ---- //
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -33,6 +35,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     iframeCache.set(tabId, new Set());
     scriptCache.set(tabId, new Set());
     widgetCache.set(tabId, new Set());
+    widgetCache.set(tabId, new Set());
+    linkCache.set(tabId, new Set());
   }
 
   /* ---- Tracking Type: 
@@ -148,6 +152,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     widgetCache.get(tabId)!.add(message.key);
   }
 
+  if (message.type === "LINK_TRACKER_DETECTED") {
+    const tabId = sender.tab?.id;
+    if (!tabId) return;
+
+    if (!linkCache.has(tabId)) {
+      linkCache.set(tabId, new Set());
+    }
+
+    linkCache.get(tabId)!.add(message.key);
+  }
+
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
     const networkRequests = trackersCache.get(message.tabId)?.size ?? 0;
     const urlParameters = urlParamsCache.get(message.tabId)?.size ?? 0;
@@ -183,6 +198,7 @@ const TAB_CACHES: CacheEntry[] = [
   {cache: iframeCache, storageKey: (id) => `iframes_${id}`},
   {cache: scriptCache, storageKey: (id) => `scripts_${id}`},
   {cache: widgetCache, storageKey: (id) => `widgets_${id}`},
+  {cache: linkCache, storageKey: (id) => `links_${id}`},
 ];
 
 chrome.tabs.onRemoved.addListener(async (tabId: number) => {

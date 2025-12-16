@@ -67,6 +67,11 @@ export function addHotspotWithTooltip(
       xOffset = 10;
       yOffset = 10;
       break;
+    case TrackingMethod.WIDGET:
+      portal.style.zIndex = "130000";
+      xOffset = 10;
+      yOffset = 10;
+      break;
     default:
       portal.style.zIndex = "100000";
       xOffset = 0;

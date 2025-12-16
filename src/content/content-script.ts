@@ -4,6 +4,7 @@ import {observeDomChanges} from "./observe-dom-changes";
 import {detectTrackingIframes} from "./tracking-iframe.content";
 import {detectTrackingScripts} from "./tracking-script.content";
 import {detectTrackingSocialWidgets} from "./tracking-widget.content";
+import {analyzeLinks} from "./analyze-links.content";
 
 /* ---- Initialisierung ---- */
 function init() {
@@ -11,6 +12,7 @@ function init() {
   detectTrackingIframes();
   detectTrackingScripts();
   detectTrackingSocialWidgets();
+  analyzeLinks();
   observeDomChanges();
 }
 

@@ -70,7 +70,11 @@ export function HotspotTooltip({
         <TooltipTrigger asChild>
           <div className={`tracking-hotspot ${getColorClass()}`} />
         </TooltipTrigger>
-        <TooltipContent className="tooltip-content" side="top" sideOffset={5}>
+        <TooltipContent
+          className={`tooltip-content ${getColorClass()}`}
+          side="top"
+          sideOffset={5}
+        >
           <div>
             <p className="tooltip-title">
               ⚠️ {trackerCount > 1 && `${trackerCount}x `}

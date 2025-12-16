@@ -58,9 +58,9 @@ export function TrackingChart() {
   return (
     <div className="pb-10 pt-4">
       <div className="pb-4">
-        <h2 className="text-lg font-semibold">Tracking Detection Overview</h2>
+        <h2 className="text-lg font-semibold">Embedded Tracking Overview</h2>
         <p className="text-sm text-muted-foreground">
-          Total trackers detected: {total}
+          Total number of embedded trackers detected: {total}
         </p>
       </div>
       <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
