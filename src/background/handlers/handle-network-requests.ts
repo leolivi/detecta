@@ -4,7 +4,7 @@ interface HandleNetworkRequests {
   tabId: number;
   details: chrome.webRequest.OnBeforeRequestDetails;
   trackersCache: Map<number, Set<string>>;
-  onTrackerDetected: (count: number) => void;
+  onTrackerDetected: (count: number, domain: string) => void;
 }
 
 // function to handle network request tracking
@@ -38,5 +38,5 @@ export function handleNetworkRequests({
 
   // increment in memory counter of trackers
   trackerSet.add(tracker.domain);
-  onTrackerDetected(trackerSet.size);
+  onTrackerDetected(trackerSet.size, tracker.domain);
 }

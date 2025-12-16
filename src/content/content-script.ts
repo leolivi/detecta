@@ -52,6 +52,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "NETWORK_TRACKER_DETECTED") {
     const adResults = redetectAdsByDomain(message.domain);
     markTracking(adResults);
+    console.log("NETWORK_TRACKER_DETECTED", message.count);
   }
 
   /* ---- Tracking Type: 
@@ -62,6 +63,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       `${message.count} URL Tracking detected: ${message.params}`,
       "warning"
     );
+    console.log("URL_PARAMS_DETECTED", message.count);
   }
 
   sendResponse({success: true, sender});

@@ -1,6 +1,6 @@
 import {TRACKING_PARAMS} from "@/data/tracking-params";
 
-interface HandleTabRequests {
+interface HandleUrlParams {
   tabId: number;
   urlString: string;
   urlParamsCache: Map<number, Set<string>>;
@@ -8,12 +8,12 @@ interface HandleTabRequests {
 }
 
 // function to handle url tracking params
-export function handleTabRequests({
+export function handleUrlParams({
   tabId,
   urlString,
   urlParamsCache,
   onParamsDetected,
-}: HandleTabRequests): void {
+}: HandleUrlParams): void {
   let url: URL;
 
   try {
