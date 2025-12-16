@@ -1,6 +1,6 @@
 import type {DetectionResult} from "@/types/detection-result";
 import {TrackerPurpose} from "@/types/tracking-enums";
-import {addHotspotWithTooltip} from "@/ui/components/mark-tracking/add-hotspot-with-tooltip";
+import {addHotspotWithTooltip} from "@/ui/components/tooltip/add-hotspot-with-tooltip";
 import {addLinkHoverEffect, wrapIframeForHover} from "./add-link-hover-effect";
 
 export function markTracking(results: DetectionResult[]): void {
