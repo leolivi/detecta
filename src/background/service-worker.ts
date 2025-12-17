@@ -57,6 +57,45 @@ class TrackerCache {
     this.widgets.delete(tabId);
     this.links.delete(tabId);
   }
+
+  // restore cache from storage for a specific tab
+  async restoreFromStorage(tabId: number): Promise<void> {
+    const keys = [
+      "trackers",
+      "urlParams",
+      "pixels",
+      "iframes",
+      "scripts",
+      "widgets",
+      "links",
+    ].map((type) => `${type}_${tabId}`);
+
+    const result = await chrome.storage.session.get(keys);
+
+    // restore network trackers
+    if (typeof result[`trackers_${tabId}`] === "number") {
+      this.trackers.set(tabId, new Set());
+    }
+
+    // restore rest of trackers
+    const types = [
+      "urlParams",
+      "pixels",
+      "iframes",
+      "scripts",
+      "widgets",
+      "links",
+    ] as const;
+
+    for (const type of types) {
+      const value = result[`${type}_${tabId}`];
+      if (Array.isArray(value)) {
+        this[type].set(tabId, new Set(value));
+      } else {
+        this[type].set(tabId, new Set());
+      }
+    }
+  }
 }
 
 const cache = new TrackerCache();
@@ -102,7 +141,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       urlString: tab.url,
       urlParamsCache: cache.urlParams,
       onParamsDetected: (params) => {
-        chrome.storage.local.set({[`urlParams_${tabId}`]: params});
+        // store url params in session storage
+        chrome.storage.session.set({[`urlParams_${tabId}`]: params});
 
         // notify content script
         chrome.tabs
@@ -117,6 +157,50 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       },
     });
   });
+});
+
+/* ---- SPA NAVIGATION HANDLER (React Router, Vue Router, etc.) ---- */
+// handle client-side navigation without page reload
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+  try {
+    const {tabId, frameId, url} = details;
+
+    // only handle top-frame navigations in valid tabs
+    if (frameId !== 0 || tabId < 0) return;
+
+    // re-scan URL parameters for new route (cache reset not needed since it's the same page)
+    if (url) {
+      /* ---- Tracking Type: 
+        URL-Decoration & Attribution Tracker
+      ---- */
+      handleUrlParams({
+        tabId,
+        urlString: url,
+        urlParamsCache: cache.urlParams,
+        onParamsDetected: (params) => {
+          chrome.storage.session.set({[`urlParams_${tabId}`]: params});
+
+          // notify content script
+          chrome.tabs
+            .sendMessage(tabId, {
+              type: "URL_PARAMS_DETECTED",
+              params,
+              count: params.length,
+            })
+            .catch((error) => {
+              console.debug("Could not send message to tab", tabId, error);
+            });
+        },
+      });
+
+      // trigger re-detection in content script for new DOM
+      chrome.tabs.sendMessage(tabId, {type: "RELOAD_DETECTIONS"}).catch(() => {
+        console.debug("Could not send reload message to tab", tabId);
+      });
+    }
+  } catch (e) {
+    console.warn("onHistoryStateUpdated handling error", e);
+  }
 });
 
 /* ---- Tracking Type: 
@@ -134,7 +218,12 @@ chrome.webRequest.onBeforeRequest.addListener(
       details,
       trackersCache: cache.trackers,
       onTrackerDetected: (count, domain) => {
-        chrome.storage.local.set({[`trackers_${tabId}`]: count});
+        // store network trackers and tracker list in session storage
+        const domains = Array.from(cache.trackers.get(tabId) || []); // TODO: check if this is bad for performance
+        chrome.storage.session.set({
+          [`trackers_${tabId}`]: count,
+          [`trackerDomains_${tabId}`]: domains,
+        });
 
         // notify content script
         chrome.tabs
@@ -162,13 +251,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     MESSAGE_TO_CACHE_TYPE[message.type as keyof typeof MESSAGE_TO_CACHE_TYPE];
   if (cacheType && tabId) {
     cache.add(cacheType, tabId, message.key);
+    // store content script trackers in session storage too
+    const items = Array.from(cache[cacheType].get(tabId) || []);
+    chrome.storage.session.set({[`${cacheType}_${tabId}`]: items});
     return;
   }
 
   // handle get counts request
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
+    // check if cache is empty and try restoring from storage if available
     const counts = cache.getAllCounts(message.tabId);
-    sendResponse({...counts, sender});
+    const hasData = Object.values(counts).some((count) => count > 0);
+
+    if (!hasData) {
+      // restore from storage
+      cache.restoreFromStorage(message.tabId).then(() => {
+        const restoredCounts = cache.getAllCounts(message.tabId);
+        sendResponse({...restoredCounts, sender, restored: true});
+      });
+      return true;
+    }
+
+    sendResponse({...counts, sender, restored: false});
     return true;
   }
 });
@@ -188,5 +292,5 @@ chrome.tabs.onRemoved.addListener(async (tabId: number) => {
     "links",
   ].map((type) => `${type}_${tabId}`);
 
-  chrome.storage.local.remove(keysToRemove);
+  chrome.storage.session.remove(keysToRemove);
 });

@@ -66,6 +66,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("URL_PARAMS_DETECTED", message.count);
   }
 
+  // SPA Navigation change
+  if (message.type === "RELOAD_DETECTIONS") {
+    console.log("Re-running detections after SPA navigation");
+    runAllDetections();
+  }
+
   sendResponse({success: true, sender});
   return true;
 });
