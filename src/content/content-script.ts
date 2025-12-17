@@ -1,16 +1,16 @@
-import {markTracking} from "@/utils/mark-tracking";
+import { markTracking } from "@/utils/mark-tracking";
 
-import {showSonnerNotification} from "@/ui/components/notification/show-notification";
-import {detectTrackingLinks} from "./detection/link-detector";
+import { showSonnerNotification } from "@/ui/components/notification/show-notification";
+import { observeDomChanges } from "../utils/observe-dom-changes";
 import {
   detectAdvertisements,
   redetectAdsByDomain,
 } from "./detection/ad-detector";
-import {detectTrackingScripts} from "./detection/script-detector";
-import {detectTrackingPixels} from "./detection/pixel-detector";
-import {detectTrackingIframes} from "./detection/iframe-detector";
-import {detectTrackingWidgets} from "./detection/widget-detector";
-import {observeDomChanges} from "../utils/observe-dom-changes";
+import { detectTrackingIframes } from "./detection/iframe-detector";
+import { detectTrackingLinks } from "./detection/link-detector";
+import { detectTrackingPixels } from "./detection/pixel-detector";
+import { detectTrackingScripts } from "./detection/script-detector";
+import { detectTrackingWidgets } from "./detection/widget-detector";
 
 export function runAllDetections(): void {
   const allResults = [
@@ -38,12 +38,38 @@ if (document.readyState === "loading") {
   init();
 }
 
+// rerender detection on cache restores and history navigation
+window.addEventListener("pageshow", () => {
+  try {
+    runAllDetections();
+  } catch (e) {
+    console.debug("pageshow detection error", e);
+  }
+});
+
+window.addEventListener("popstate", () => {
+  try {
+    runAllDetections();
+  } catch (e) {
+    console.debug("popstate detection error", e);
+  }
+});
+
 // ---- detect messages from service worker ---- //
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // check if extension context is still valid
   if (!chrome.runtime?.id) {
     console.log("Extension context invalidated, skipping message");
     return false;
+  }
+
+  // trigger a re-run of all detections when requested by the service worker (e.g., back/forward or SPA nav)
+  if (message.type === "RELOAD_DETECTIONS") {
+    try {
+      runAllDetections();
+    } catch (e) {
+      console.debug("RELOAD_DETECTIONS error", e);
+    }
   }
 
   /* ---- Tracking Type: 
@@ -66,6 +92,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("URL_PARAMS_DETECTED", message.count);
   }
 
-  sendResponse({success: true, sender});
+  sendResponse({ success: true, sender });
   return true;
 });

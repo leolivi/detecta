@@ -1,6 +1,6 @@
 /// <reference types="chrome" />
-import {handleNetworkRequests} from "./handlers/handle-network-requests";
-import {handleUrlParams} from "./handlers/handle-url-params";
+import { handleNetworkRequests } from "./handlers/handle-network-requests";
+import { handleUrlParams } from "./handlers/handle-url-params";
 
 /* ---- CACHE MANAGER ---- */
 class TrackerCache {
@@ -102,7 +102,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       urlString: tab.url,
       urlParamsCache: cache.urlParams,
       onParamsDetected: (params) => {
-        chrome.storage.local.set({[`urlParams_${tabId}`]: params});
+        chrome.storage.local.set({ [`urlParams_${tabId}`]: params });
 
         // notify content script
         chrome.tabs
@@ -134,7 +134,7 @@ chrome.webRequest.onBeforeRequest.addListener(
       details,
       trackersCache: cache.trackers,
       onTrackerDetected: (count, domain) => {
-        chrome.storage.local.set({[`trackers_${tabId}`]: count});
+        chrome.storage.local.set({ [`trackers_${tabId}`]: count });
 
         // notify content script
         chrome.tabs
@@ -150,8 +150,86 @@ chrome.webRequest.onBeforeRequest.addListener(
     });
     return undefined;
   },
-  {urls: ["<all_urls>"]}
+  { urls: ["<all_urls>"] }
 );
+
+/* ---- WEB NAVIGATION HANDLERS (Back/Forward & SPA) ---- */
+// rerender after navigation change
+chrome.webNavigation.onCommitted.addListener((details) => {
+  try {
+    const { tabId, frameId, url } = details;
+    // only handle top-frame navigations
+    if (frameId !== 0 || tabId < 0) return;
+
+    // reset per-tab caches on navigation (including back/forward)
+    cache.reset(tabId);
+
+    // re-scan URL parameters immediately on navigation
+    if (url) {
+      handleUrlParams({
+        tabId,
+        urlString: url,
+        urlParamsCache: cache.urlParams,
+        onParamsDetected: (params) => {
+          chrome.storage.local.set({ [`urlParams_${tabId}`]: params });
+          chrome.tabs
+            .sendMessage(tabId, {
+              type: "URL_PARAMS_DETECTED",
+              params,
+              count: params.length,
+            })
+            .catch((error) => {
+              console.warn("Could not send message to tab", tabId, error);
+            });
+        },
+      });
+    }
+
+    // send commant do rerender to content script
+    chrome.tabs.sendMessage(tabId, { type: "RELOAD_DETECTIONS" }).catch(() => {
+      console.warn("Could not send message to tab", tabId);
+    });
+  } catch (e) {
+    console.warn("onCommitted navigation handling error", e);
+  }
+});
+
+// if frame changes to a new URL
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+  try {
+    const { tabId, frameId, url } = details;
+    if (frameId !== 0 || tabId < 0) return;
+
+    cache.reset(tabId);
+
+    if (url) {
+      handleUrlParams({
+        tabId,
+        urlString: url,
+        urlParamsCache: cache.urlParams,
+        onParamsDetected: (params) => {
+          chrome.storage.local.set({ [`urlParams_${tabId}`]: params });
+          chrome.tabs
+            .sendMessage(tabId, {
+              type: "URL_PARAMS_DETECTED",
+              params,
+              count: params.length,
+            })
+            .catch((error) => {
+              console.debug("Could not send message to tab", tabId, error);
+            });
+        },
+      });
+    }
+
+    // send commant do rerender to content script
+    chrome.tabs.sendMessage(tabId, { type: "RELOAD_DETECTIONS" }).catch(() => {
+      console.warn("Could not send message to tab", tabId);
+    });
+  } catch (e) {
+    console.warn("onHistoryStateUpdated handling error", e);
+  }
+});
 
 /* ---- MESSAGE HANDLER ---- */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -168,7 +246,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // handle get counts request
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
     const counts = cache.getAllCounts(message.tabId);
-    sendResponse({...counts, sender});
+    sendResponse({ ...counts, sender });
     return true;
   }
 });
