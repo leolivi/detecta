@@ -159,50 +159,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   });
 });
 
-/* ---- SPA NAVIGATION HANDLER (React Router, Vue Router, etc.) ---- */
-// handle client-side navigation without page reload
-chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-  try {
-    const {tabId, frameId, url} = details;
-
-    // only handle top-frame navigations in valid tabs
-    if (frameId !== 0 || tabId < 0) return;
-
-    // re-scan URL parameters for new route (cache reset not needed since it's the same page)
-    if (url) {
-      /* ---- Tracking Type: 
-        URL-Decoration & Attribution Tracker
-      ---- */
-      handleUrlParams({
-        tabId,
-        urlString: url,
-        urlParamsCache: cache.urlParams,
-        onParamsDetected: (params) => {
-          chrome.storage.session.set({[`urlParams_${tabId}`]: params});
-
-          // notify content script
-          chrome.tabs
-            .sendMessage(tabId, {
-              type: "URL_PARAMS_DETECTED",
-              params,
-              count: params.length,
-            })
-            .catch((error) => {
-              console.debug("Could not send message to tab", tabId, error);
-            });
-        },
-      });
-
-      // trigger re-detection in content script for new DOM
-      chrome.tabs.sendMessage(tabId, {type: "RELOAD_DETECTIONS"}).catch(() => {
-        console.debug("Could not send reload message to tab", tabId);
-      });
-    }
-  } catch (e) {
-    console.warn("onHistoryStateUpdated handling error", e);
-  }
-});
-
 /* ---- Tracking Type: 
 NETWORK TRACKER (Request-Level Tracking)
 ---- */
