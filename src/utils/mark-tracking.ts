@@ -1,7 +1,7 @@
 import type {DetectionResult} from "@/types/detection-result";
-import {TrackerPurpose} from "@/types/tracking-enums";
+
 import {addHotspotWithTooltip} from "@/ui/components/tooltip/add-hotspot-with-tooltip";
-import {addLinkHoverEffect, wrapIframeForHover} from "./add-link-hover-effect";
+import {addLinkHoverEffect} from "./add-link-hover-effect";
 
 export function markTracking(results: DetectionResult[]): void {
   results.forEach((result) => {
@@ -14,12 +14,15 @@ export function markTracking(results: DetectionResult[]): void {
     }
 
     // ad iframes get outline + hover effect
-    if (element instanceof HTMLIFrameElement && purpose === TrackerPurpose.AD) {
+    if (element instanceof HTMLIFrameElement) {
       element.style.outline = "3px solid red";
       element.style.outlineOffset = "-3px";
 
-      const wrapper = wrapIframeForHover(element);
-      addLinkHoverEffect(wrapper, method, purpose);
+      /* BROWSER RESTRICTION: Custom cursors and JS hover events on <iframe> do not work in Chrome because the cursor and hover state are controlled by the iframe's content document.
+      This is especially true for cross-origin or sandboxed iframes (e.g., most ads).
+      The outline still works, but the cursor cannot be reliably changed via JS or CSS on the iframe element itself. */
+      addLinkHoverEffect(element, method, purpose);
+
       return;
     }
 
