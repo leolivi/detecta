@@ -1,6 +1,7 @@
 /// <reference types="chrome" />
 import {handleNetworkRequests} from "./handlers/handle-network-requests";
 import {handleUrlParams} from "./handlers/handle-url-params";
+import {updateTabBadge} from "./handlers/update-badge";
 
 /* ---- CACHE MANAGER ---- */
 class TrackerCache {
@@ -57,7 +58,6 @@ class TrackerCache {
     this.widgets.delete(tabId);
     this.links.delete(tabId);
   }
-
   // restore cache from storage for a specific tab
   async restoreFromStorage(tabId: number): Promise<void> {
     const keys = [
@@ -98,7 +98,7 @@ class TrackerCache {
   }
 }
 
-const cache = new TrackerCache();
+export const cache = new TrackerCache();
 
 /* ---- MESSAGE TYPE MAPPING ---- */
 const MESSAGE_TO_CACHE_TYPE = {
@@ -125,6 +125,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   // Reset cache when page is loading
   if (changeInfo.status === "loading" && changeInfo.url) {
     cache.reset(tabId);
+    updateTabBadge(tabId);
   }
 
   if (changeInfo.status !== "complete") return;
@@ -181,6 +182,8 @@ chrome.webRequest.onBeforeRequest.addListener(
           [`trackerDomains_${tabId}`]: domains,
         });
 
+        updateTabBadge(tabId);
+
         // notify content script
         chrome.tabs
           .sendMessage(tabId, {
@@ -210,6 +213,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // store content script trackers in session storage too
     const items = Array.from(cache[cacheType].get(tabId) || []);
     chrome.storage.session.set({[`${cacheType}_${tabId}`]: items});
+    updateTabBadge(tabId);
     return;
   }
 

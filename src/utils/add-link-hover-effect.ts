@@ -47,21 +47,3 @@ export function resolveCursorStyle(
       return CursorStyles.UNKNOWN;
   }
 }
-
-// function add hover effect to tracked ads
-export function wrapIframeForHover(iframe: HTMLIFrameElement): HTMLElement {
-  iframe.style.pointerEvents = "none";
-
-  const wrapper = document.createElement("div");
-  wrapper.style.cssText = `
-    position: relative;
-    display: inline-block;
-    width: ${iframe.offsetWidth}px;
-    height: ${iframe.offsetHeight}px;
-  `;
-
-  iframe.parentNode?.insertBefore(wrapper, iframe);
-  wrapper.appendChild(iframe);
-
-  return wrapper;
-}
