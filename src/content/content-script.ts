@@ -38,6 +38,32 @@ if (document.readyState === "loading") {
   init();
 }
 
+// ---- MUTATION OBSERVER to detect changes in URL (privacy friendly instead of chrome.webNavigation.onHistoryStateUpdated to check SPA) ---- //
+let lastUrl = location.href;
+
+// detect URL changes in SPAs
+const urlObserver = new MutationObserver(() => {
+  if (location.href !== lastUrl) {
+    console.log("URL changed:", lastUrl, "->", location.href);
+    lastUrl = location.href;
+
+    // re-run detections
+    runAllDetections();
+  }
+});
+
+// watch for DOM changes that might indicate navigation
+urlObserver.observe(document, {
+  subtree: true,
+  childList: true,
+});
+
+// also listen to popstate (back/forward in SPAs)
+window.addEventListener("popstate", () => {
+  console.log("Popstate detected");
+  runAllDetections();
+});
+
 // ---- detect messages from service worker ---- //
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // check if extension context is still valid
