@@ -24,6 +24,10 @@ export function extractTrackingParams(url: string): Record<string, string> {
 // function to notify service worker
 export function notifyServiceWorker(type: string, key: string): void {
   try {
+    if (!chrome.runtime?.id) {
+      console.warn("Extension context invalidated - bitte Seite neu laden");
+      return;
+    }
     chrome.runtime.sendMessage({type, key});
   } catch (e) {
     console.warn("Service Worker could not be notified", e);

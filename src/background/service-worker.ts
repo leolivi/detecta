@@ -210,10 +210,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     MESSAGE_TO_CACHE_TYPE[message.type as keyof typeof MESSAGE_TO_CACHE_TYPE];
   if (cacheType && tabId) {
     cache.add(cacheType, tabId, message.key);
+    updateTabBadge(tabId);
+
     // store content script trackers in session storage too
     const items = Array.from(cache[cacheType].get(tabId) || []);
     chrome.storage.session.set({[`${cacheType}_${tabId}`]: items});
-    updateTabBadge(tabId);
     return;
   }
 
