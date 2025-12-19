@@ -1,6 +1,7 @@
 /// <reference types="chrome" />
 import {handleNetworkRequests} from "./handlers/handle-network-requests";
 import {handleUrlParams} from "./handlers/handle-url-params";
+import {updateTabBadge} from "./handlers/update-badge";
 
 /* ---- CACHE MANAGER ---- */
 class TrackerCache {
@@ -59,7 +60,7 @@ class TrackerCache {
   }
 }
 
-const cache = new TrackerCache();
+export const cache = new TrackerCache();
 
 /* ---- MESSAGE TYPE MAPPING ---- */
 const MESSAGE_TO_CACHE_TYPE = {
@@ -86,6 +87,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   // Reset cache when page is loading
   if (changeInfo.status === "loading" && changeInfo.url) {
     cache.reset(tabId);
+    updateTabBadge(tabId);
   }
 
   if (changeInfo.status !== "complete") return;
@@ -136,6 +138,8 @@ chrome.webRequest.onBeforeRequest.addListener(
       onTrackerDetected: (count, domain) => {
         chrome.storage.local.set({[`trackers_${tabId}`]: count});
 
+        updateTabBadge(tabId);
+
         // notify content script
         chrome.tabs
           .sendMessage(tabId, {
@@ -162,6 +166,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     MESSAGE_TO_CACHE_TYPE[message.type as keyof typeof MESSAGE_TO_CACHE_TYPE];
   if (cacheType && tabId) {
     cache.add(cacheType, tabId, message.key);
+    updateTabBadge(tabId);
     return;
   }
 
