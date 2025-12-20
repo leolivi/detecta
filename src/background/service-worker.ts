@@ -16,6 +16,10 @@ class TrackerCache {
   private widgets = new Map<number, Set<string>>();
   private links = new Map<number, Set<string>>();
 
+  // track when data was collected
+  private timestamps = new Map<number, number>();
+  private hasScanned = new Set<number>();
+
   add(
     type: "pixels" | "iframes" | "scripts" | "widgets" | "links",
     tabId: number,
@@ -96,9 +100,29 @@ class TrackerCache {
       }
     }
   }
+
+  markScanned(tabId: number): void {
+    if (!this.hasScanned.has(tabId)) {
+      this.hasScanned.add(tabId);
+      this.timestamps.set(tabId, Date.now());
+    }
+  }
+
+  updateTimestamp(tabId: number): void {
+    this.timestamps.set(tabId, Date.now());
+  }
+
+  getTimestamp(tabId: number): number | null {
+    return this.timestamps.get(tabId) || null;
+  }
+
+  hasSession(tabId: number): boolean {
+    return this.hasScanned.has(tabId);
+  }
 }
 
 export const cache = new TrackerCache();
+const STALE_AFTER_MS = 120_000;
 
 /* ---- MESSAGE TYPE MAPPING ---- */
 const MESSAGE_TO_CACHE_TYPE = {
@@ -144,6 +168,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       onParamsDetected: (params) => {
         // store url params in session storage
         chrome.storage.session.set({[`urlParams_${tabId}`]: params});
+        cache.markScanned(tabId);
+        cache.updateTimestamp(tabId);
 
         // notify content script
         chrome.tabs
@@ -164,7 +190,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 NETWORK TRACKER (Request-Level Tracking)
 ---- */
 /* ---- NETWORK REQUEST HANDLER ---- */
-
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     const tabId = details.tabId;
@@ -183,6 +208,8 @@ chrome.webRequest.onBeforeRequest.addListener(
         });
 
         updateTabBadge(tabId);
+        cache.markScanned(tabId);
+        cache.updateTimestamp(tabId);
 
         // notify content script
         chrome.tabs
@@ -222,18 +249,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
     // check if cache is empty and try restoring from storage if available
     const counts = cache.getAllCounts(message.tabId);
-    const hasData = Object.values(counts).some((count) => count > 0);
+    const hasData = cache.hasSession(message.tabId);
 
-    if (!hasData) {
-      // restore from storage
-      cache.restoreFromStorage(message.tabId).then(() => {
-        const restoredCounts = cache.getAllCounts(message.tabId);
-        sendResponse({...restoredCounts, sender, restored: true});
-      });
-      return true;
-    }
+    const timestamp = cache.getTimestamp(message.tabId);
+    const age = timestamp ? Date.now() - timestamp : null;
+    const isStale = age != null && age > STALE_AFTER_MS;
 
-    sendResponse({...counts, sender, restored: false});
+    sendResponse({...counts, sender, hasData, isStale, age});
     return true;
   }
 });

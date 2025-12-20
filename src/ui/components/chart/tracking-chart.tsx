@@ -6,6 +6,7 @@ import {
 } from "./chart";
 import {Bar, BarChart, XAxis, YAxis} from "recharts";
 import {useTrackingStats} from "@/hooks/use-tracking-stats";
+import {ChartAlert} from "../alert/chart-alert";
 
 export function TrackingChart() {
   const stats = useTrackingStats();
@@ -55,10 +56,14 @@ export function TrackingChart() {
     },
   } satisfies ChartConfig;
 
-  const total = Object.values(stats).reduce(
-    (sum, val) => sum + (typeof val === "number" ? val : 0),
-    0
-  );
+  const total =
+    stats.networkRequests +
+    stats.urlParameters +
+    stats.iframes +
+    stats.pixels +
+    stats.widgets +
+    stats.scripts +
+    stats.links;
 
   return (
     <div className="pb-10 pt-4">
@@ -67,20 +72,34 @@ export function TrackingChart() {
         <p className="text-sm text-muted-foreground">
           Total number of embedded trackers detected: {total}
         </p>
+        {stats.age && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Last updated: {Math.floor(stats.age / 1000)}s ago
+          </p>
+        )}
       </div>
-      <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-        <BarChart data={chartData}>
-          <XAxis
-            dataKey="name"
-            tickLine={false}
-            tickMargin={10}
-            axisLine={false}
-          />
-          <YAxis />
-          <Bar dataKey="value" radius={8} />
-          <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
-        </BarChart>
-      </ChartContainer>
+
+      {stats.hasData ? (
+        <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+          <BarChart data={chartData}>
+            <XAxis
+              dataKey="name"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+            />
+            <YAxis />
+            <Bar dataKey="value" radius={8} />
+            <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
+          </BarChart>
+        </ChartContainer>
+      ) : (
+        <ChartAlert
+          hasData={stats.hasData}
+          isStale={stats.isStale}
+          age={stats.age}
+        />
+      )}
     </div>
   );
 }

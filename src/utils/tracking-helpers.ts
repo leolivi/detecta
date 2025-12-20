@@ -30,7 +30,7 @@ export function notifyServiceWorker(type: string, key: string): void {
     }
     chrome.runtime.sendMessage({type, key});
   } catch (e) {
-    console.warn("Service Worker could not be notified", e);
+    console.warn("Service Worker could not be notified", e); // TODO: console.debug conversion!!
   }
 }
 
