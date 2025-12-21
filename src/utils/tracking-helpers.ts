@@ -16,7 +16,7 @@ export function extractTrackingParams(url: string): Record<string, string> {
       });
     }
   } catch (e) {
-    console.warn("Invalid URL, cannot parse:", e);
+    console.debug("Invalid URL, cannot parse:", e);
   }
   return params;
 }
@@ -25,12 +25,12 @@ export function extractTrackingParams(url: string): Record<string, string> {
 export function notifyServiceWorker(type: string, key: string): void {
   try {
     if (!chrome.runtime?.id) {
-      console.warn("Extension context invalidated - bitte Seite neu laden");
+      console.debug("Extension context invalidated - bitte Seite neu laden");
       return;
     }
     chrome.runtime.sendMessage({type, key});
   } catch (e) {
-    console.warn("Service Worker could not be notified", e); // TODO: console.debug conversion!!
+    console.debug("Service Worker could not be notified", e);
   }
 }
 

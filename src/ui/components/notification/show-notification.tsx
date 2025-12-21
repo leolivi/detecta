@@ -6,7 +6,7 @@ let root: ReactDOM.Root | null = null;
 export function ensureToaster() {
   if (!root) {
     if (!document.body) {
-      console.warn("document.body not ready, waiting...");
+      console.debug("document.body not ready, waiting...");
       setTimeout(ensureToaster, 50);
       return;
     }

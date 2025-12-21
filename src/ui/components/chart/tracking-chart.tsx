@@ -7,9 +7,11 @@ import {
 import {Bar, BarChart, XAxis, YAxis} from "recharts";
 import {useTrackingStats} from "@/hooks/use-tracking-stats";
 import {ChartAlert} from "../alert/chart-alert";
+import {useState} from "react";
 
 export function TrackingChart() {
   const stats = useTrackingStats();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const chartData = [
     {
@@ -65,21 +67,34 @@ export function TrackingChart() {
     stats.scripts +
     stats.links;
 
+  const shouldShowAlert = !stats.hasData || stats.isStale;
+
   return (
     <div className="pb-10 pt-4">
       <div className="pb-4">
         <h2 className="text-lg font-semibold">Embedded Tracking Overview</h2>
-        <p className="text-sm text-muted-foreground">
-          Total number of embedded trackers detected: {total}
-        </p>
-        {stats.age && (
+        {!shouldShowAlert && (
+          <p className="text-sm text-muted-foreground">
+            Total number of embedded trackers detected: {total}
+          </p>
+        )}
+        {stats.age && !stats.isStale && (
           <p className="text-xs text-muted-foreground mt-1">
             Last updated: {Math.floor(stats.age / 1000)}s ago
           </p>
         )}
       </div>
 
-      {stats.hasData ? (
+      {shouldShowAlert && (
+        <ChartAlert
+          hasData={stats.hasData}
+          isStale={stats.isStale}
+          age={stats.age}
+          isRefreshing={isRefreshing}
+          onRefresh={setIsRefreshing}
+        />
+      )}
+      {stats.hasData && (
         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
           <BarChart data={chartData}>
             <XAxis
@@ -93,12 +108,6 @@ export function TrackingChart() {
             <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
           </BarChart>
         </ChartContainer>
-      ) : (
-        <ChartAlert
-          hasData={stats.hasData}
-          isStale={stats.isStale}
-          age={stats.age}
-        />
       )}
     </div>
   );

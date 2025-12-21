@@ -1,15 +1,26 @@
 import {AlertCircle, RefreshCw} from "lucide-react";
 import {Alert, AlertDescription, AlertTitle} from "./alert";
 import {Button} from "../button/button";
+import {Spinner} from "../spinner/spinner";
 
 interface ChartAlertProps {
   hasData: boolean;
   isStale: boolean;
   age: number | null;
+  isRefreshing?: boolean;
+  onRefresh?: (loading: boolean) => void;
 }
 
-export function ChartAlert({hasData, isStale, age}: ChartAlertProps) {
+export function ChartAlert({
+  hasData,
+  isStale,
+  age,
+  isRefreshing = false,
+  onRefresh,
+}: ChartAlertProps) {
   const handleRefresh = async () => {
+    onRefresh?.(true);
+
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
@@ -18,6 +29,10 @@ export function ChartAlert({hasData, isStale, age}: ChartAlertProps) {
     if (tab?.id) {
       chrome.tabs.reload(tab.id);
     }
+
+    setTimeout(() => {
+      onRefresh?.(false);
+    }, 5000);
   };
 
   const formatAge = (ms: number): string => {
@@ -49,8 +64,17 @@ export function ChartAlert({hasData, isStale, age}: ChartAlertProps) {
             onClick={handleRefresh}
             className="ml-4 border-red-600 hover:bg-red-100"
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh Page
+            {isRefreshing ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh Page
+              </>
+            )}
           </Button>
         </AlertDescription>
       </Alert>
@@ -58,7 +82,7 @@ export function ChartAlert({hasData, isStale, age}: ChartAlertProps) {
   }
 
   // UI if Data exists but is stale
-  if (isStale && age != null) {
+  if (isStale && age) {
     return (
       <Alert
         variant="destructive"
@@ -77,8 +101,17 @@ export function ChartAlert({hasData, isStale, age}: ChartAlertProps) {
             onClick={handleRefresh}
             className="ml-4 border-yellow-600 hover:bg-yellow-100"
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh Page
+            {isRefreshing ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh Page
+              </>
+            )}
           </Button>
         </AlertDescription>
       </Alert>
