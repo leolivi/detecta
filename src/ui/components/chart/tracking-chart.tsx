@@ -6,9 +6,12 @@ import {
 } from "./chart";
 import {Bar, BarChart, XAxis, YAxis} from "recharts";
 import {useTrackingStats} from "@/hooks/use-tracking-stats";
+import {ChartAlert} from "../alert/chart-alert";
+import {useState} from "react";
 
 export function TrackingChart() {
   const stats = useTrackingStats();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const chartData = [
     {
@@ -41,6 +44,11 @@ export function TrackingChart() {
       value: stats.widgets,
       fill: "var(--chart-6)",
     },
+    {
+      name: "Click Tracking",
+      value: stats.links,
+      fill: "var(--chart-7)",
+    },
   ];
 
   const chartConfig = {
@@ -50,32 +58,57 @@ export function TrackingChart() {
     },
   } satisfies ChartConfig;
 
-  const total = Object.values(stats).reduce(
-    (sum, val) => sum + (typeof val === "number" ? val : 0),
-    0
-  );
+  const total =
+    stats.networkRequests +
+    stats.urlParameters +
+    stats.iframes +
+    stats.pixels +
+    stats.widgets +
+    stats.scripts +
+    stats.links;
+
+  const shouldShowAlert = !stats.hasData || stats.isStale;
 
   return (
     <div className="pb-10 pt-4">
       <div className="pb-4">
         <h2 className="text-lg font-semibold">Embedded Tracking Overview</h2>
-        <p className="text-sm text-muted-foreground">
-          Total number of embedded trackers detected: {total}
-        </p>
+        {!shouldShowAlert && (
+          <p className="text-sm text-muted-foreground">
+            Total number of embedded trackers detected: {total}
+          </p>
+        )}
+        {stats.age && !stats.isStale && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Last updated: {Math.floor(stats.age / 1000)}s ago
+          </p>
+        )}
       </div>
-      <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-        <BarChart data={chartData}>
-          <XAxis
-            dataKey="name"
-            tickLine={false}
-            tickMargin={10}
-            axisLine={false}
-          />
-          <YAxis />
-          <Bar dataKey="value" radius={8} />
-          <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
-        </BarChart>
-      </ChartContainer>
+
+      {shouldShowAlert && (
+        <ChartAlert
+          hasData={stats.hasData}
+          isStale={stats.isStale}
+          age={stats.age}
+          isRefreshing={isRefreshing}
+          onRefresh={setIsRefreshing}
+        />
+      )}
+      {stats.hasData && (
+        <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+          <BarChart data={chartData}>
+            <XAxis
+              dataKey="name"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+            />
+            <YAxis />
+            <Bar dataKey="value" radius={8} />
+            <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
+          </BarChart>
+        </ChartContainer>
+      )}
     </div>
   );
 }

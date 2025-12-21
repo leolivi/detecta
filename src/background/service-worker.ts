@@ -16,6 +16,10 @@ class TrackerCache {
   private widgets = new Map<number, Set<string>>();
   private links = new Map<number, Set<string>>();
 
+  // track when data was collected
+  timestamps = new Map<number, number>();
+  hasScanned = new Set<number>();
+
   add(
     type: "pixels" | "iframes" | "scripts" | "widgets" | "links",
     tabId: number,
@@ -47,6 +51,11 @@ class TrackerCache {
     this.scripts.set(tabId, new Set());
     this.widgets.set(tabId, new Set());
     this.links.set(tabId, new Set());
+
+    this.timestamps.delete(tabId);
+    this.hasScanned.delete(tabId);
+
+    chrome.storage.session.remove([`timestamp_${tabId}`]);
   }
 
   clear(tabId: number): void {
@@ -58,9 +67,93 @@ class TrackerCache {
     this.widgets.delete(tabId);
     this.links.delete(tabId);
   }
+  // restore cache from storage for a specific tab
+  async restoreFromStorage(tabId: number): Promise<void> {
+    const keys = [
+      "trackers",
+      "urlParams",
+      "pixels",
+      "iframes",
+      "scripts",
+      "widgets",
+      "links",
+      "trackerDomains",
+      "timestamp",
+    ].map((type) => `${type}_${tabId}`);
+
+    const result = await chrome.storage.session.get(keys);
+
+    // check if value is a non empty array
+    const isNonEmptyArray = (val: unknown): val is string[] => {
+      return Array.isArray(val) && val.length > 0;
+    };
+
+    // restore network trackers
+    const trackerDomains = result[`trackerDomains_${tabId}`];
+    if (Array.isArray(trackerDomains)) {
+      this.trackers.set(tabId, new Set(trackerDomains));
+    }
+
+    // restore rest of trackers
+    const types = [
+      "urlParams",
+      "pixels",
+      "iframes",
+      "scripts",
+      "widgets",
+      "links",
+    ] as const;
+
+    let hasAnyData = false;
+
+    for (const type of types) {
+      const value = result[`${type}_${tabId}`];
+      if (Array.isArray(value)) {
+        this[type].set(tabId, new Set(value));
+        hasAnyData = true;
+      } else {
+        this[type].set(tabId, new Set());
+      }
+    }
+
+    if (hasAnyData || isNonEmptyArray(trackerDomains)) {
+      this.hasScanned.add(tabId);
+
+      // Timestamp aus Storage laden
+      const storedTimestamp = result[`timestamp_${tabId}`];
+      if (typeof storedTimestamp === "number") {
+        this.timestamps.set(tabId, storedTimestamp);
+      }
+    }
+  }
+
+  markScanned(tabId: number): void {
+    if (!this.hasScanned.has(tabId)) {
+      this.hasScanned.add(tabId);
+      const now = Date.now();
+      this.timestamps.set(tabId, now);
+
+      chrome.storage.session.set({[`timestamp_${tabId}`]: now});
+    }
+  }
+
+  updateTimestamp(tabId: number): void {
+    const now = Date.now();
+    this.timestamps.set(tabId, Date.now());
+    chrome.storage.session.set({[`timestamp_${tabId}`]: now});
+  }
+
+  getTimestamp(tabId: number): number | null {
+    return this.timestamps.get(tabId) || null;
+  }
+
+  hasSession(tabId: number): boolean {
+    return this.hasScanned.has(tabId);
+  }
 }
 
 export const cache = new TrackerCache();
+const STALE_AFTER_MS = 180_000;
 
 /* ---- MESSAGE TYPE MAPPING ---- */
 const MESSAGE_TO_CACHE_TYPE = {
@@ -83,14 +176,19 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 /* ---- TAB UPDATE HANDLER ---- */
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
   // Reset cache when page is loading
   if (changeInfo.status === "loading" && changeInfo.url) {
     cache.reset(tabId);
     updateTabBadge(tabId);
+
+    cache.timestamps.delete(tabId);
+    cache.hasScanned.delete(tabId);
   }
 
   if (changeInfo.status !== "complete") return;
+
+  await cache.restoreFromStorage(tabId);
 
   /* ---- Tracking Type: 
     URL-Decoration & Attribution Tracker
@@ -104,7 +202,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       urlString: tab.url,
       urlParamsCache: cache.urlParams,
       onParamsDetected: (params) => {
-        chrome.storage.local.set({[`urlParams_${tabId}`]: params});
+        // store url params in session storage
+        chrome.storage.session.set({[`urlParams_${tabId}`]: params});
+        cache.markScanned(tabId);
+        cache.updateTimestamp(tabId);
 
         // notify content script
         chrome.tabs
@@ -125,7 +226,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 NETWORK TRACKER (Request-Level Tracking)
 ---- */
 /* ---- NETWORK REQUEST HANDLER ---- */
-
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     const tabId = details.tabId;
@@ -136,9 +236,16 @@ chrome.webRequest.onBeforeRequest.addListener(
       details,
       trackersCache: cache.trackers,
       onTrackerDetected: (count, domain) => {
-        chrome.storage.local.set({[`trackers_${tabId}`]: count});
+        // store network trackers and tracker list in session storage
+        const domains = Array.from(cache.trackers.get(tabId) || []); // TODO: check if this is bad for performance
+        chrome.storage.session.set({
+          [`trackers_${tabId}`]: count,
+          [`trackerDomains_${tabId}`]: domains,
+        });
 
         updateTabBadge(tabId);
+        cache.markScanned(tabId);
+        cache.updateTimestamp(tabId);
 
         // notify content script
         chrome.tabs
@@ -148,7 +255,7 @@ chrome.webRequest.onBeforeRequest.addListener(
             domain,
           })
           .catch(() => {
-            console.warn("No content script available in this tab");
+            console.debug("No content script available in this tab");
           });
       },
     });
@@ -167,13 +274,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (cacheType && tabId) {
     cache.add(cacheType, tabId, message.key);
     updateTabBadge(tabId);
+
+    // store content script trackers in session storage too
+    const items = Array.from(cache[cacheType].get(tabId) || []);
+    chrome.storage.session.set({[`${cacheType}_${tabId}`]: items});
     return;
   }
 
   // handle get counts request
   if (message.type === "GET_TRACKER_COUNTS" && message.tabId != null) {
-    const counts = cache.getAllCounts(message.tabId);
-    sendResponse({...counts, sender});
+    (async () => {
+      if (!cache.hasSession(message.tabId)) {
+        await cache.restoreFromStorage(message.tabId);
+      }
+      // check if cache is empty and try restoring from storage if available
+      const counts = cache.getAllCounts(message.tabId);
+      const hasData = cache.hasSession(message.tabId);
+
+      const timestamp = cache.getTimestamp(message.tabId);
+      const age = timestamp ? Date.now() - timestamp : null;
+      const isStale = age != null && age > STALE_AFTER_MS;
+
+      sendResponse({...counts, sender, hasData, isStale, age});
+    })();
     return true;
   }
 });
@@ -185,13 +308,15 @@ chrome.tabs.onRemoved.addListener(async (tabId: number) => {
   // remove from storage
   const keysToRemove = [
     "trackers",
+    "trackerDomains",
     "urlParams",
     "pixels",
     "iframes",
     "scripts",
     "widgets",
     "links",
+    "timestamp",
   ].map((type) => `${type}_${tabId}`);
 
-  chrome.storage.local.remove(keysToRemove);
+  chrome.storage.session.remove(keysToRemove);
 });

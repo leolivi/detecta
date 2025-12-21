@@ -112,7 +112,7 @@ export function detectTrackingLinks(): DetectionResult[] {
         purpose: TrackerPurpose,
       });
     } catch (e) {
-      console.warn("Invalid Link URL, cannot parse:", e);
+      console.debug("Invalid Link URL, cannot parse:", e);
     }
   });
 
