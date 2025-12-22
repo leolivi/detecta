@@ -14,14 +14,21 @@ function setBadge(tabId: number, count: number) {
   });
 
   // color based on tracker count
-  let color = "#4CAF50";
-  if (count > 20) color = "#F44336";
-  else if (count > 10) color = "#FF9800";
+  let color = "#2E7D32";
+  if (count > 20) color = "#C62828";
+  else if (count > 10) color = "#EF6C00";
 
   chrome.action.setBadgeBackgroundColor({
     color,
     tabId,
   });
+
+  if (chrome.action.setBadgeTextColor) {
+    chrome.action.setBadgeTextColor({
+      color: "#FFFFFF",
+      tabId,
+    });
+  }
 }
 
 // calculate the count of all trackers
