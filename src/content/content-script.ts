@@ -68,8 +68,18 @@ window.addEventListener("popstate", () => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // check if extension context is still valid
   if (!chrome.runtime?.id) {
-    console.log("Extension context invalidated, skipping message");
     return false;
+  }
+
+  if (message.type === "PING") {
+    sendResponse({alive: true});
+    return true;
+  }
+
+  if (message.type === "RERUN_DETECTIONS") {
+    runAllDetections();
+    sendResponse({success: true});
+    return true;
   }
 
   /* ---- Tracking Type: 
