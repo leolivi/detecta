@@ -1,3 +1,4 @@
+import {COOKIE_BANNER_KEYWORDS} from "@/data/false-positive-list";
 import {AD_KEYWORDS} from "@/data/tracking-params";
 import type {DetectionResult} from "@/types/detection-result";
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
@@ -61,7 +62,15 @@ function isAdvertisement(iframe: HTMLIFrameElement): boolean {
     id.toLowerCase().includes("ad") || title.toLowerCase().includes("ad");
   const emptyButLikelyAd = (!src || src === "about:blank") && attrMatch;
 
-  return srcMatch || attrMatch || emptyButLikelyAd;
+  const basicAd = srcMatch || attrMatch || emptyButLikelyAd;
+
+  // exclude cookie and consent banners (false positives)
+  const isCookieBanner =
+    COOKIE_BANNER_KEYWORDS.some((kw) => src.toLowerCase().includes(kw)) ||
+    COOKIE_BANNER_KEYWORDS.some((kw) => id.toLowerCase().includes(kw)) ||
+    COOKIE_BANNER_KEYWORDS.some((kw) => title.toLowerCase().includes(kw));
+
+  return basicAd && !isCookieBanner;
 }
 
 export function redetectAdsByDomain(domain: string): DetectionResult[] {

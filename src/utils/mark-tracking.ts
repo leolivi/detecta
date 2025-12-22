@@ -1,5 +1,4 @@
 import type {DetectionResult} from "@/types/detection-result";
-
 import {addHotspotWithTooltip} from "@/ui/components/tooltip/add-hotspot-with-tooltip";
 import {addLinkHoverEffect} from "./add-link-hover-effect";
 
@@ -17,6 +16,7 @@ export function markTracking(results: DetectionResult[]): void {
     if (element instanceof HTMLIFrameElement) {
       element.style.outline = "3px solid red";
       element.style.outlineOffset = "-3px";
+      element.className += "detecta-ad-iframe";
 
       /* BROWSER RESTRICTION: Custom cursors and JS hover events on <iframe> do not work in Chrome because the cursor and hover state are controlled by the iframe's content document.
       This is especially true for cross-origin or sandboxed iframes (e.g., most ads).

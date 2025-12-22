@@ -15,3 +15,12 @@ export const IS_SOCIAL_DOMAIN = [
   "tiktok.com",
   "snapchat.com",
 ];
+
+export const COOKIE_BANNER_KEYWORDS = [
+  "cookie",
+  "consent",
+  "gdpr",
+  "euconsent",
+  "cookiebanner",
+  "tcf",
+];
