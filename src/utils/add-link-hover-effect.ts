@@ -11,11 +11,11 @@ export function addLinkHoverEffect(
   const cursorStyle = resolveCursorStyle(method, purpose);
 
   element.addEventListener("mouseenter", () => {
-    changeCursor(element, cursorStyle, method);
+    changeCursor(element, cursorStyle);
   });
 
   element.addEventListener("mouseleave", () => {
-    changeCursor(element, CursorStyles.NORMAL, null);
+    changeCursor(element, CursorStyles.NORMAL);
   });
 }
 

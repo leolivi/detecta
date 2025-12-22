@@ -44,7 +44,6 @@ let lastUrl = location.href;
 // detect URL changes in SPAs
 const urlObserver = new MutationObserver(() => {
   if (location.href !== lastUrl) {
-    console.log("URL changed:", lastUrl, "->", location.href);
     lastUrl = location.href;
 
     // re-run detections
@@ -60,7 +59,6 @@ urlObserver.observe(document, {
 
 // also listen to popstate (back/forward in SPAs)
 window.addEventListener("popstate", () => {
-  console.log("Popstate detected");
   runAllDetections();
 });
 
