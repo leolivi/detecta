@@ -1,15 +1,13 @@
 import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 
 interface HandleNetworkRequests {
-  tabId: number;
   details: chrome.webRequest.OnBeforeRequestDetails;
-  trackersCache: Map<number, Set<string>>;
+  trackersCache: Set<string>;
   onTrackerDetected: (count: number, domain: string) => void;
 }
 
 // function to handle network request tracking
 export function handleNetworkRequests({
-  tabId,
   details,
   trackersCache,
   onTrackerDetected,
@@ -27,16 +25,9 @@ export function handleNetworkRequests({
 
   if (!tracker) return;
 
-  // set tabId if none is set already
-  let trackerSet = trackersCache.get(tabId);
-  if (!trackerSet) {
-    trackerSet = new Set();
-    trackersCache.set(tabId, trackerSet);
-  }
-
-  if (trackerSet.has(tracker.domain)) return;
+  if (trackersCache.has(tracker.domain)) return;
 
   // increment in memory counter of trackers
-  trackerSet.add(tracker.domain);
-  onTrackerDetected(trackerSet.size, tracker.domain);
+  trackersCache.add(tracker.domain);
+  onTrackerDetected(trackersCache.size, tracker.domain);
 }

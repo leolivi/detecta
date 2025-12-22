@@ -26,6 +26,13 @@ function setBadge(tabId: number, count: number) {
 // calculate the count of all trackers
 export function updateTabBadge(tabId: number) {
   const counts = cache.getAllCounts(tabId);
-  const totalCount = Object.values(counts).reduce((sum, val) => sum + val, 0);
+  const totalCount =
+    (counts.networkRequests ?? 0) +
+    (counts.urlParameters ?? 0) +
+    (counts.pixels ?? 0) +
+    (counts.iframes ?? 0) +
+    (counts.scripts ?? 0) +
+    (counts.widgets ?? 0) +
+    (counts.links ?? 0);
   setBadge(tabId, totalCount);
 }

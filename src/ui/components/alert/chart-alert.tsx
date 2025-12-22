@@ -18,6 +18,7 @@ export function ChartAlert({
   isRefreshing = false,
   onRefresh,
 }: ChartAlertProps) {
+  // function to refresh current tab
   const handleRefresh = async () => {
     onRefresh?.(true);
 
@@ -26,13 +27,34 @@ export function ChartAlert({
       currentWindow: true,
     });
 
-    if (tab?.id) {
-      chrome.tabs.reload(tab.id);
+    if (!tab?.id) {
+      onRefresh?.(false);
+      return;
     }
 
+    // listener for tab updates
+    const listener: Parameters<typeof chrome.tabs.onUpdated.addListener>[0] = (
+      tabId,
+      changeInfo
+    ) => {
+      if (tabId === tab.id && changeInfo.status === "complete") {
+        chrome.tabs.onUpdated.removeListener(listener);
+        // wait until data is fetched
+        setTimeout(() => {
+          onRefresh?.(false);
+        }, 1000);
+      }
+    };
+
+    chrome.tabs.onUpdated.addListener(listener);
+
+    // timeout in case something goes wrong
     setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener);
       onRefresh?.(false);
-    }, 5000);
+    }, 15000);
+
+    chrome.tabs.reload(tab.id);
   };
 
   const formatAge = (ms: number): string => {

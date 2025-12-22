@@ -1,15 +1,13 @@
 import {TRACKING_PARAMS} from "@/data/tracking-params";
 
 interface HandleUrlParams {
-  tabId: number;
   urlString: string;
-  urlParamsCache: Map<number, Set<string>>;
+  urlParamsCache: Set<string>;
   onParamsDetected: (params: string[]) => void;
 }
 
 // function to handle url tracking params
 export function handleUrlParams({
-  tabId,
   urlString,
   urlParamsCache,
   onParamsDetected,
@@ -34,24 +32,17 @@ export function handleUrlParams({
 
   if (foundParams.length === 0) return;
 
-  // set tabId if none is already set
-  let paramsSet = urlParamsCache.get(tabId);
-  if (!paramsSet) {
-    paramsSet = new Set();
-    urlParamsCache.set(tabId, paramsSet);
-  }
-
   let changed = false;
 
   // increment in memory counter of params
   for (const param of foundParams) {
-    if (!paramsSet.has(param)) {
-      paramsSet.add(param);
+    if (!urlParamsCache.has(param)) {
+      urlParamsCache.add(param);
       changed = true;
     }
   }
 
   if (!changed) return;
 
-  onParamsDetected(Array.from(paramsSet));
+  onParamsDetected(Array.from(urlParamsCache));
 }

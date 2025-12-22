@@ -23,16 +23,6 @@ Make sure you have [Node.js](https://nodejs.org/) (version 18+ or 20+) installed
    npm install
    ```
 
-## 🏗️ Development
-
-To start the development server:
-
-```sh
-npm run dev
-```
-
-This will start the Vite development server and open your default browser.
-
 ## 📦 Build
 
 To create a production build:
@@ -55,6 +45,7 @@ Your React app should now be loaded as a Chrome extension!
 
 - `public/`: Contains static files and the `manifest.json`.
 - `src/`: Contains the React app source code.
+- `build/`: Automatically generated folder to upload in Chrome.
 - `vite.config.ts`: Vite configuration file.
 - `tsconfig.json`: TypeScript configuration file.
 - `package.json`: Contains the project dependencies and scripts.
@@ -76,4 +67,3 @@ https://github.com/5tigerjelly/chrome-extension-react-template
 
 Logo SVG
 https://www.shapes.gallery/
-# detecta
