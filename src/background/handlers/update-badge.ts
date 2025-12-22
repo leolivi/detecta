@@ -1,3 +1,4 @@
+import {getTotalTrackers} from "@/utils/total-trackers";
 import {cache} from "../service-worker";
 
 // function to set the extension badge
@@ -26,13 +27,6 @@ function setBadge(tabId: number, count: number) {
 // calculate the count of all trackers
 export function updateTabBadge(tabId: number) {
   const counts = cache.getAllCounts(tabId);
-  const totalCount =
-    (counts.networkRequests ?? 0) +
-    (counts.urlParameters ?? 0) +
-    (counts.pixels ?? 0) +
-    (counts.iframes ?? 0) +
-    (counts.scripts ?? 0) +
-    (counts.widgets ?? 0) +
-    (counts.links ?? 0);
-  setBadge(tabId, totalCount);
+  const total = getTotalTrackers(counts);
+  setBadge(tabId, total);
 }

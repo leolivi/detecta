@@ -8,6 +8,7 @@ import {Bar, BarChart, XAxis, YAxis} from "recharts";
 import {useTrackingStats} from "@/hooks/use-tracking-stats";
 import {ChartAlert} from "../alert/chart-alert";
 import {useState} from "react";
+import {getTotalTrackers} from "@/utils/total-trackers";
 
 export function TrackingChart() {
   const stats = useTrackingStats();
@@ -58,14 +59,7 @@ export function TrackingChart() {
     },
   } satisfies ChartConfig;
 
-  const total =
-    stats.networkRequests +
-    stats.urlParameters +
-    stats.iframes +
-    stats.pixels +
-    stats.widgets +
-    stats.scripts +
-    stats.links;
+  const total = getTotalTrackers(stats);
 
   const shouldShowAlert = !stats.hasData || stats.isStale;
 
