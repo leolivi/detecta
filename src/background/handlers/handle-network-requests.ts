@@ -21,7 +21,9 @@ export function handleNetworkRequests({
   }
 
   // check if request is a tracker
-  const tracker = TRACKING_DOMAINS.find((t) => url.hostname.endsWith(t.domain));
+  const tracker = TRACKING_DOMAINS.find(
+    (t) => url.hostname === t.domain || url.hostname.endsWith(`.${t.domain}`)
+  );
 
   if (!tracker) return;
 

@@ -12,6 +12,8 @@ import {detectTrackingIframes} from "./detection/iframe-detector";
 import {detectTrackingWidgets} from "./detection/widget-detector";
 import {observeDomChanges} from "../utils/observe-dom-changes";
 
+const alreadyProcessedDomains = new Set<string>();
+
 export function runAllDetections(): void {
   const allResults = [
     ...detectTrackingLinks(),
@@ -84,8 +86,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     NETWORK TRACKER (Request-Level Tracking)
   ---- */
   if (message.type === "NETWORK_TRACKER_DETECTED") {
-    const adResults = redetectAdsByDomain(message.domain);
-    markTracking(adResults);
+    if (!alreadyProcessedDomains.has(message.domain)) {
+      alreadyProcessedDomains.add(message.domain);
+      const adResults = redetectAdsByDomain(message.domain);
+      markTracking(adResults);
+    }
     console.log("NETWORK_TRACKER_DETECTED", message.count);
   }
 
