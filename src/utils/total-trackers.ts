@@ -5,13 +5,9 @@ export interface TrackerCounts {
   iframes?: number;
   scripts?: number;
   widgets?: number;
-  links?: number;
 }
 
-/**
- * Calculate the total number of trackers from any partial object of tracker counts.
- * Undefined values default to 0, ensuring robustness.
- */
+// calculate the total number of embedded trackers
 export function getTotalTrackers(counts: TrackerCounts): number {
   return (
     (counts.networkRequests ?? 0) +
@@ -19,7 +15,6 @@ export function getTotalTrackers(counts: TrackerCounts): number {
     (counts.pixels ?? 0) +
     (counts.iframes ?? 0) +
     (counts.scripts ?? 0) +
-    (counts.widgets ?? 0) +
-    (counts.links ?? 0)
+    (counts.widgets ?? 0)
   );
 }

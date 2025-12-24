@@ -45,11 +45,6 @@ export function TrackingChart() {
       value: stats.widgets,
       fill: "var(--chart-6)",
     },
-    {
-      name: "Click Tracking",
-      value: stats.links,
-      fill: "var(--chart-7)",
-    },
   ];
 
   const chartConfig = {
