@@ -1,5 +1,11 @@
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
-import {TRACKING_PARAMS} from "@/data/tracking-params";
+import {
+  ADVERTISING_PARAMS,
+  ANALYTICS_PARAMS,
+  GENERAL_TRACKING_PARAMS,
+  SOCIAL_PARAMS,
+  UTM_PARAMS,
+} from "@/data/tracking-params";
 import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {AFFILIATE_PARAMS, URL_SHORTENER_PARAMS} from "@/data/tracking-params";
 import {
@@ -30,10 +36,22 @@ export function detectTrackingLinks(): DetectionResult[] {
       const url = new URL(link.href, window.location.href);
       const params = extractTrackingParams(url.href);
 
-      // check hash fragments
-      const hasTrackingHash =
+      // check hash fragments for each category
+      const hasUTMHash =
         url.hash.length > 1 &&
-        TRACKING_PARAMS.some((p) => url.hash.toLowerCase().includes(p));
+        UTM_PARAMS.some((p) => url.hash.toLowerCase().includes(p));
+      const hasAnalyticsHash =
+        url.hash.length > 1 &&
+        ANALYTICS_PARAMS.some((p) => url.hash.toLowerCase().includes(p));
+      const hasSocialHash =
+        url.hash.length > 1 &&
+        SOCIAL_PARAMS.some((p) => url.hash.toLowerCase().includes(p));
+      const hasAdvertisingHash =
+        url.hash.length > 1 &&
+        ADVERTISING_PARAMS.some((p) => url.hash.toLowerCase().includes(p));
+      const hasGeneralHash =
+        url.hash.length > 1 &&
+        GENERAL_TRACKING_PARAMS.some((p) => url.hash.toLowerCase().includes(p));
 
       // check tracker domain
       let purpose: TrackerPurpose | null = null;
@@ -48,20 +66,23 @@ export function detectTrackingLinks(): DetectionResult[] {
 
       if (trackerInfo) {
         purpose = trackerInfo.purpose;
+      }
 
-        // skip social domains without tracking params
-        IS_SOCIAL_DOMAIN.some((d) => url.hostname.includes(d));
+      // skip social domains without tracking params
+      const isSocialDomain = IS_SOCIAL_DOMAIN.some((d) =>
+        url.hostname.includes(d)
+      );
 
+      if (
         // if it's a social-domain with NO Tracking Params, skip
-        if (
-          IS_SOCIAL_DOMAIN &&
-          Object.keys(params).length === 0 &&
-          !hasTrackingHash
-        ) {
-          return;
-        }
-        //  else mark as social tracker
-        if (IS_SOCIAL_DOMAIN) purpose = TrackerPurpose.SOCIAL;
+        isSocialDomain &&
+        Object.keys(params).length === 0 &&
+        !hasSocialHash
+      ) {
+        return;
+      }
+      if (isSocialDomain) {
+        purpose = TrackerPurpose.SOCIAL;
       }
 
       // determine tracking method
@@ -74,11 +95,58 @@ export function detectTrackingLinks(): DetectionResult[] {
         )
       ) {
         method = TrackingMethod.AFFILIATE;
-      } else if (URL_SHORTENER_PARAMS.some((s) => url.hostname.includes(s))) {
+      }
+      // URL Shortener
+      else if (URL_SHORTENER_PARAMS.some((s) => url.hostname.includes(s))) {
         method = TrackingMethod.SHORTENER;
-      } else if (Object.keys(params).length > 0 || hasTrackingHash) {
+      }
+      // Analytics Parameter
+      else if (
+        ANALYTICS_PARAMS.some((p) =>
+          Object.keys(params).some((k) => k.toLowerCase().startsWith(p))
+        ) ||
+        hasAnalyticsHash
+      ) {
+        purpose = TrackerPurpose.ANALYTICS;
+      }
+      // Social Parameter
+      else if (
+        SOCIAL_PARAMS.some((p) =>
+          Object.keys(params).some((k) => k.toLowerCase().startsWith(p))
+        ) ||
+        hasSocialHash
+      ) {
+        purpose = TrackerPurpose.SOCIAL;
+      }
+      // UTM Parameter
+      else if (
+        UTM_PARAMS.some((p) =>
+          Object.keys(params).some((k) => k.toLowerCase().startsWith(p))
+        ) ||
+        hasUTMHash
+      ) {
         method = TrackingMethod.URL_DECORATION;
-      } else if (!method && isRedirectURL(url)) {
+      }
+      // Advertising Parameter
+      else if (
+        ADVERTISING_PARAMS.some((p) =>
+          Object.keys(params).some((k) => k.toLowerCase().startsWith(p))
+        ) ||
+        hasAdvertisingHash
+      ) {
+        purpose = TrackerPurpose.AD;
+      }
+      // Allgemeine Tracking Parameter
+      else if (
+        GENERAL_TRACKING_PARAMS.some((p) =>
+          Object.keys(params).some((k) => k.toLowerCase().startsWith(p))
+        ) ||
+        hasGeneralHash
+      ) {
+        method = TrackingMethod.URL_DECORATION;
+      }
+      // Redirector Parameter
+      else if (!method && isRedirectURL(url)) {
         method = TrackingMethod.REDIRECTOR;
       }
 

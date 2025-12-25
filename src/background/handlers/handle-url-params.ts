@@ -1,4 +1,10 @@
-import {TRACKING_PARAMS} from "@/data/tracking-params";
+import {
+  ADVERTISING_PARAMS,
+  ANALYTICS_PARAMS,
+  GENERAL_TRACKING_PARAMS,
+  SOCIAL_PARAMS,
+  UTM_PARAMS,
+} from "@/data/tracking-params";
 
 interface HandleUrlParams {
   urlString: string;
@@ -25,7 +31,14 @@ export function handleUrlParams({
 
   // check if there are params found
   for (const key of params.keys()) {
-    if (TRACKING_PARAMS.some((prefix) => key.startsWith(prefix))) {
+    const lowerKey = key.toLowerCase();
+    if (
+      UTM_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+      ANALYTICS_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+      SOCIAL_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+      ADVERTISING_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+      GENERAL_TRACKING_PARAMS.some((p) => lowerKey.startsWith(p))
+    ) {
       foundParams.push(key);
     }
   }

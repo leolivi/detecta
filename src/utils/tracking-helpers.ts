@@ -1,4 +1,11 @@
-import {REDIRECTOR_PARAMS, TRACKING_PARAMS} from "@/data/tracking-params";
+import {
+  ADVERTISING_PARAMS,
+  ANALYTICS_PARAMS,
+  GENERAL_TRACKING_PARAMS,
+  REDIRECTOR_PARAMS,
+  SOCIAL_PARAMS,
+  UTM_PARAMS,
+} from "@/data/tracking-params";
 
 // checks if a tracker comes with params
 export function extractTrackingParams(url: string): Record<string, string> {
@@ -10,7 +17,14 @@ export function extractTrackingParams(url: string): Record<string, string> {
     if (url.startsWith("http://") || url.startsWith("https://")) {
       const urlObj = new URL(url);
       urlObj.searchParams.forEach((value, key) => {
-        if (TRACKING_PARAMS.some((p) => key.toLowerCase().startsWith(p))) {
+        const lowerKey = key.toLowerCase();
+        if (
+          UTM_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+          ANALYTICS_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+          SOCIAL_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+          ADVERTISING_PARAMS.some((p) => lowerKey.startsWith(p)) ||
+          GENERAL_TRACKING_PARAMS.some((p) => lowerKey.startsWith(p))
+        ) {
           params[key] = value;
         }
       });
