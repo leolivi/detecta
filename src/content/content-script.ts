@@ -17,11 +17,11 @@ const alreadyProcessedDomains = new Set<string>();
 export function runAllDetections(): void {
   const allResults = [
     ...detectTrackingLinks(),
-    ...detectAdvertisements(),
     ...detectTrackingPixels(),
     ...detectTrackingIframes(),
     ...detectTrackingScripts(),
     ...detectTrackingWidgets(),
+    ...detectAdvertisements(),
   ];
 
   markTracking(allResults);

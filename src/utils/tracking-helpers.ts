@@ -1,3 +1,5 @@
+import {IS_SOCIAL_DOMAIN} from "@/data/false-positive-list";
+import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {
   ADVERTISING_PARAMS,
   ANALYTICS_PARAMS,
@@ -6,7 +8,23 @@ import {
   SOCIAL_PARAMS,
   UTM_PARAMS,
 } from "@/data/tracking-params";
+import type {TrackerPurpose} from "@/types/tracking-enums";
 
+// function to notify service worker
+export function notifyServiceWorker(type: string, key: string): void {
+  try {
+    if (!chrome.runtime?.id) {
+      console.debug("Extension context invalidated - bitte Seite neu laden");
+      return;
+    }
+    chrome.runtime.sendMessage({type, key});
+  } catch (e) {
+    console.debug("Service Worker could not be notified", e);
+  }
+}
+
+/* ---- Tracking Type: Click Based HREF's 
+-> helper functions for link detection ---- */
 // checks if a tracker comes with params
 export function extractTrackingParams(url: string): Record<string, string> {
   const params: Record<string, string> = {};
@@ -35,17 +53,39 @@ export function extractTrackingParams(url: string): Record<string, string> {
   return params;
 }
 
-// function to notify service worker
-export function notifyServiceWorker(type: string, key: string): void {
-  try {
-    if (!chrome.runtime?.id) {
-      console.debug("Extension context invalidated - bitte Seite neu laden");
-      return;
-    }
-    chrome.runtime.sendMessage({type, key});
-  } catch (e) {
-    console.debug("Service Worker could not be notified", e);
-  }
+// check if hash fragment contains tracking params
+export function hasHashParam(hash: string, params: string[]): boolean {
+  if (hash.length <= 1) return false;
+  const lowerHash = hash.toLowerCase();
+  return params.some((p) => lowerHash.includes(p));
+}
+
+// check if domain is a social domain
+export function isSocialDomain(hostname: string): boolean {
+  return IS_SOCIAL_DOMAIN.some((d) => hostname.includes(d));
+}
+
+// function to find tracker domain and its purpose
+export function findTrackerDomain(url: URL): TrackerPurpose | null {
+  const trackerInfo = TRACKING_DOMAINS.find((t) => {
+    const hostname = url.hostname;
+    return (
+      hostname === t.domain ||
+      hostname.endsWith("." + t.domain) ||
+      hostname.includes(t.domain)
+    );
+  });
+  return trackerInfo?.purpose || null;
+}
+
+// function to check if any param matches from a given list
+export function hasParamMatch(
+  params: Record<string, string>,
+  paramList: string[]
+): boolean {
+  return paramList.some((p) =>
+    Object.keys(params).some((k) => k.toLowerCase().startsWith(p))
+  );
 }
 
 // function to check if a URL is a redirector URL

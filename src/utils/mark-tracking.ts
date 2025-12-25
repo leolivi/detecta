@@ -13,7 +13,10 @@ export function markTracking(results: DetectionResult[]): void {
     }
 
     // ad iframes get outline + hover effect
-    if (element instanceof HTMLIFrameElement) {
+    if (
+      element instanceof HTMLIFrameElement &&
+      element.dataset.trackerType === "ad"
+    ) {
       element.style.outline = "3px solid red";
       element.style.outlineOffset = "-3px";
       element.className += "detecta-ad-iframe";
