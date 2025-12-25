@@ -281,6 +281,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     updateTabBadge(tabId);
   }
 
+  if (message.type === "RESET_CACHE" && sender.tab?.id != null) {
+    cache.clear(sender.tab.id);
+    updateTabBadge(sender.tab.id);
+    sendResponse({success: true});
+    return true;
+  }
+
   // handle ping
   if (message.type === "PING") {
     sendResponse({alive: true});

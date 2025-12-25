@@ -1,4 +1,4 @@
-import {markTracking} from "@/utils/mark-tracking";
+import {markTracking, resetTracking} from "@/utils/mark-tracking";
 
 import {showSonnerNotification} from "@/ui/components/notification/show-notification";
 import {detectTrackingLinks} from "./detection/link-detector";
@@ -48,6 +48,8 @@ const urlObserver = new MutationObserver(() => {
   if (location.href !== lastUrl) {
     lastUrl = location.href;
 
+    chrome.runtime.sendMessage({type: "RESET_CACHE"});
+    resetTracking();
     // re-run detections
     runAllDetections();
   }

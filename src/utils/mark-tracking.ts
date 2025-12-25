@@ -41,3 +41,18 @@ export function markTracking(results: DetectionResult[]): void {
     );
   });
 }
+
+// reset UI function for SPA's
+export function resetTracking(): void {
+  document
+    .querySelectorAll(".tracking-hotspot-wrapper")
+    .forEach((el) => el.remove());
+
+  document.querySelectorAll(".detecta-ad-iframe").forEach((el) => {
+    if (el instanceof HTMLElement) {
+      el.style.outline = "";
+      el.style.outlineOffset = "";
+      el.classList.remove("detecta-ad-iframe");
+    }
+  });
+}
