@@ -56,14 +56,17 @@ This project is licensed under the MIT License.
 
 ## Source
 
-Manifest V3 Documentation
-https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3?hl=de
+developer.chrome.com, 2025. Chrome Extensions Manifest V3. [online] Chrome for Developers. Verfügbar unter: https://developer.chrome.com/docs/extensions?hl=de [Zugegriffen 13 November 2025].
 
-MDN Browser Extension Documentation
-https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions
+Duck Duck Go, Inc., 2025. duckduckgo/tracker-radar. Verfügbar unter: https://github.com/duckduckgo/tracker-radar [Zugegriffen 13 November
+2025].
 
-Chrome Extension React / Vite Template
-https://github.com/5tigerjelly/chrome-extension-react-template
+Mozilla, 2025. Browser extensions - Mozilla | MDN. [online] MDN Web Docs.
+Verfügbar unter: <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/
+WebExtensions> [Zugegriffen 13 November 2025].
 
-Logo SVG
-https://www.shapes.gallery/
+Oh, C., 2025. 5tigerjelly/chrome-extension-react-template. Verfügbar unter:
+<https://github.com/5tigerjelly/chrome-extension-react-template> [Zugegriffen
+13 November 2025].
+
+Michalczyk, M., 2025. SVG Shapes. [online] Verfügbar unter: https://www.shapes.gallery/ [Zugegriffen 25 Dezember 2025].
