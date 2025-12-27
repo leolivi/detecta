@@ -326,7 +326,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       sendResponse({
         ...counts,
-        hasData: counts.hasData,
+        hasData: Object.values(counts).some(
+          (x) => typeof x === "number" && x > 0
+        ),
         isStale,
         age,
       });
