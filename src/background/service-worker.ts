@@ -190,12 +190,8 @@ const MESSAGE_TO_CACHE_TYPE = {
 
 /* ---- INSTALLATION ---- */
 chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log("Extension started");
-
   if (details.reason === "install") {
-    chrome.tabs.create({
-      url: "https://example.com/welcome",
-    });
+    console.log("Extension installed");
   }
 });
 
