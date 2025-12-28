@@ -3,6 +3,7 @@ export const FALSE_POSITIVE_EXCLUSION_LIST = [
   "captcha",
   "about:blank",
   "data:image",
+  "localhost",
 ];
 
 export const IS_SOCIAL_DOMAIN = [

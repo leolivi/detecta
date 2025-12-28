@@ -23,6 +23,8 @@ export function detectTrackingIframes(): DetectionResult[] {
     if (iframe.dataset.iframeAnalyzed) return;
     iframe.dataset.iframeAnalyzed = "true";
 
+    if (iframe.dataset.adAnalyzed) return;
+
     const src = iframe.src;
     if (!src) return;
 

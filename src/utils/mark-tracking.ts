@@ -13,7 +13,10 @@ export function markTracking(results: DetectionResult[]): void {
     }
 
     // ad iframes get outline + hover effect
-    if (element instanceof HTMLIFrameElement) {
+    if (
+      element instanceof HTMLIFrameElement &&
+      element.dataset.trackerType === "ad"
+    ) {
       element.style.outline = "3px solid red";
       element.style.outlineOffset = "-3px";
       element.className += "detecta-ad-iframe";
@@ -36,5 +39,20 @@ export function markTracking(results: DetectionResult[]): void {
       method!,
       purpose
     );
+  });
+}
+
+// reset UI function for SPA's
+export function resetTracking(): void {
+  document
+    .querySelectorAll(".tracking-hotspot-wrapper")
+    .forEach((el) => el.remove());
+
+  document.querySelectorAll(".detecta-ad-iframe").forEach((el) => {
+    if (el instanceof HTMLElement) {
+      el.style.outline = "";
+      el.style.outlineOffset = "";
+      el.classList.remove("detecta-ad-iframe");
+    }
   });
 }

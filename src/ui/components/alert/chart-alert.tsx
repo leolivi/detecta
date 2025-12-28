@@ -59,8 +59,14 @@ export function ChartAlert({
 
   const formatAge = (ms: number): string => {
     const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600);
 
+    if (hours > 0) {
+      return `${hours} hour${hours > 1 ? "s" : ""}${
+        minutes > 0 ? ` ${minutes} minute${minutes > 1 ? "s" : ""}` : ""
+      }`;
+    }
     if (minutes > 0) {
       return `${minutes} minute${minutes > 1 ? "s" : ""}`;
     }

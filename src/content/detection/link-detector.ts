@@ -1,14 +1,24 @@
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
-import {TRACKING_PARAMS} from "@/data/tracking-params";
-import {TRACKING_DOMAINS} from "@/data/tracking-domains";
-import {AFFILIATE_PARAMS, URL_SHORTENER_PARAMS} from "@/data/tracking-params";
+import {
+  ADVERTISING_PARAMS,
+  AFFILIATE_PARAMS,
+  ANALYTICS_PARAMS,
+  GENERAL_TRACKING_PARAMS,
+  SOCIAL_PARAMS,
+  URL_SHORTENER_PARAMS,
+  UTM_PARAMS,
+} from "@/data/tracking-params";
+
 import {
   extractTrackingParams,
+  findTrackerDomain,
+  hasHashParam,
+  hasParamMatch,
   isRedirectURL,
+  isSocialDomain,
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
 import type {DetectionResult} from "@/types/detection-result";
-import {IS_SOCIAL_DOMAIN} from "@/data/false-positive-list";
 
 /* ---- Tracking Type: 
   Click Based Link Tracking 
@@ -17,7 +27,7 @@ import {IS_SOCIAL_DOMAIN} from "@/data/false-positive-list";
 // prevents double events
 const processedLinks = new Set<string>();
 
-/* ---- Tracking Type: Click Based HREF's ---- */
+// Tracking Type: Click Based HREF's
 export function detectTrackingLinks(): DetectionResult[] {
   const results: DetectionResult[] = [];
   const links = document.querySelectorAll<HTMLAnchorElement>("a[href]");
@@ -31,40 +41,24 @@ export function detectTrackingLinks(): DetectionResult[] {
       const params = extractTrackingParams(url.href);
 
       // check hash fragments
-      const hasTrackingHash =
-        url.hash.length > 1 &&
-        TRACKING_PARAMS.some((p) => url.hash.toLowerCase().includes(p));
+      const hasUTMHash = hasHashParam(url.hash, UTM_PARAMS);
+      const hasAnalyticsHash = hasHashParam(url.hash, ANALYTICS_PARAMS);
+      const hasSocialHash = hasHashParam(url.hash, SOCIAL_PARAMS);
+      const hasAdvertisingHash = hasHashParam(url.hash, ADVERTISING_PARAMS);
+      const hasGeneralHash = hasHashParam(url.hash, GENERAL_TRACKING_PARAMS);
 
       // check tracker domain
-      let purpose: TrackerPurpose | null = null;
-      const trackerInfo = TRACKING_DOMAINS.find((t) => {
-        const hostname = url.hostname;
-        return (
-          hostname === t.domain ||
-          hostname.endsWith("." + t.domain) ||
-          hostname.includes(t.domain)
-        );
-      });
+      let purpose: TrackerPurpose | null = findTrackerDomain(url);
 
-      if (trackerInfo) {
-        purpose = trackerInfo.purpose;
-
-        // skip social domains without tracking params
-        IS_SOCIAL_DOMAIN.some((d) => url.hostname.includes(d));
-
-        // if it's a social-domain with NO Tracking Params, skip
-        if (
-          IS_SOCIAL_DOMAIN &&
-          Object.keys(params).length === 0 &&
-          !hasTrackingHash
-        ) {
+      // skip social domains without tracking params
+      if (isSocialDomain(url.hostname)) {
+        if (Object.keys(params).length === 0 && !hasSocialHash) {
           return;
         }
-        //  else mark as social tracker
-        if (IS_SOCIAL_DOMAIN) purpose = TrackerPurpose.SOCIAL;
+        purpose = TrackerPurpose.SOCIAL;
       }
 
-      // determine tracking method
+      // determine tracking method and purpose
       let method: TrackingMethod | null = null;
       const lower = url.href.toLowerCase();
 
@@ -76,7 +70,21 @@ export function detectTrackingLinks(): DetectionResult[] {
         method = TrackingMethod.AFFILIATE;
       } else if (URL_SHORTENER_PARAMS.some((s) => url.hostname.includes(s))) {
         method = TrackingMethod.SHORTENER;
-      } else if (Object.keys(params).length > 0 || hasTrackingHash) {
+      } else if (hasParamMatch(params, ANALYTICS_PARAMS) || hasAnalyticsHash) {
+        purpose = TrackerPurpose.ANALYTICS;
+      } else if (hasParamMatch(params, SOCIAL_PARAMS) || hasSocialHash) {
+        purpose = TrackerPurpose.SOCIAL;
+      } else if (hasParamMatch(params, UTM_PARAMS) || hasUTMHash) {
+        method = TrackingMethod.URL_DECORATION;
+      } else if (
+        hasParamMatch(params, ADVERTISING_PARAMS) ||
+        hasAdvertisingHash
+      ) {
+        purpose = TrackerPurpose.AD;
+      } else if (
+        hasParamMatch(params, GENERAL_TRACKING_PARAMS) ||
+        hasGeneralHash
+      ) {
         method = TrackingMethod.URL_DECORATION;
       } else if (!method && isRedirectURL(url)) {
         method = TrackingMethod.REDIRECTOR;
@@ -84,6 +92,7 @@ export function detectTrackingLinks(): DetectionResult[] {
 
       // skip if no tracking detected
       if (!method && !purpose) return;
+
       // skip if already processed
       const linkKey = String(link.href);
       if (processedLinks.has(linkKey)) return;
@@ -107,9 +116,10 @@ export function detectTrackingLinks(): DetectionResult[] {
         purpose,
         params,
       });
+
       console.log("[LINK]", processedLinks.size, link.href, {
-        method: TrackingMethod,
-        purpose: TrackerPurpose,
+        method,
+        purpose,
       });
     } catch (e) {
       console.debug("Invalid Link URL, cannot parse:", e);

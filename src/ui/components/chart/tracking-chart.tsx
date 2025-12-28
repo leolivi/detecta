@@ -67,7 +67,7 @@ export function TrackingChart() {
             Total number of embedded trackers detected: {total}
           </p>
         )}
-        {stats.age && !stats.isStale && (
+        {stats.age && (
           <p className="text-xs text-muted-foreground mt-1">
             Last updated: {Math.floor(stats.age / 1000)}s ago
           </p>

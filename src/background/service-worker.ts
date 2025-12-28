@@ -190,12 +190,8 @@ const MESSAGE_TO_CACHE_TYPE = {
 
 /* ---- INSTALLATION ---- */
 chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log("Extension started");
-
   if (details.reason === "install") {
-    chrome.tabs.create({
-      url: "https://example.com/welcome",
-    });
+    console.log("Extension installed");
   }
 });
 
@@ -281,6 +277,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     updateTabBadge(tabId);
   }
 
+  if (message.type === "RESET_CACHE" && sender.tab?.id != null) {
+    cache.clear(sender.tab.id);
+    updateTabBadge(sender.tab.id);
+    sendResponse({success: true});
+    return true;
+  }
+
   // handle ping
   if (message.type === "PING") {
     sendResponse({alive: true});
@@ -319,7 +322,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       sendResponse({
         ...counts,
-        hasData: counts.hasData,
+        hasData: Object.values(counts).some(
+          (x) => typeof x === "number" && x > 0
+        ),
         isStale,
         age,
       });

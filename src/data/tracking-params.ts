@@ -7,79 +7,22 @@ Sources:
   -> categorized sources with ai assistance
 */
 
-export const TRACKING_PARAMS: string[] = [
-  // Google Ads & Analytics
+export const UTM_PARAMS = [
   "utm_source",
   "utm_medium",
   "utm_campaign",
   "utm_term",
   "utm_content",
   "utm_id",
-
-  // Google Click IDs
-  "gclid",
-  "gclsrc",
-  "dclid",
-  "gbraid",
-  "wbraid",
-
+];
+export const ANALYTICS_PARAMS = [
   // Google Analytics
+  "ga",
   "_ga",
   "_gl",
-
-  // Facebook/Meta
-  "fbclid",
-  "fb_action_ids",
-  "fb_action_types",
-  "fb_source",
-  "fb_ref",
-
-  // Instagram
-  "igshid",
-  "ig_rid",
-
-  // Microsoft/Bing
-  "msclkid",
-  "ms_clkid",
-
-  // Twitter/X
-  "twclid",
-  "tw_source",
-
-  // LinkedIn
-  "li_fat_id",
-  "lipi",
-  "licu",
-
-  // TikTok
-  "ttclid",
-  "tt_medium",
-  "tt_content",
-
-  // Snapchat
-  "ScCid",
-
-  // Pinterest
-  "epik",
-
-  // Mailchimp
-  "mc_cid",
-  "mc_eid",
-
-  // HubSpot
-  "_hsenc",
-  "_hsmi",
-  "__hssc",
-  "__hstc",
-  "__hsfp",
-
-  // SendGrid
-  "sg_link_id",
-
-  // Vero
-  "vero_id",
-  "vero_conv",
-
+  // Adobe Analytics
+  "s_cid",
+  "adobe_mc",
   // Piwik/Matomo
   "pk_campaign",
   "pk_kwd",
@@ -93,11 +36,68 @@ export const TRACKING_PARAMS: string[] = [
   "mtm_source",
   "mtm_content",
   "mtm_cid",
+  // HubSpot
+  "_hsenc",
+  "_hsmi",
+  "__hssc",
+  "__hstc",
+  "__hsfp",
+  // Mailchimp
+  "mc_cid",
+  "mc_eid",
+  // SendGrid
+  "sg_link_id",
+  // Vero
+  "vero_id",
+  "vero_conv",
+  // Marketo
+  "mkt_tok",
+  // Drip
+  "__s",
+  // Klaviyo
+  "_kx",
+];
 
-  // Adobe Analytics
-  "s_cid",
-  "adobe_mc",
+export const SOCIAL_PARAMS = [
+  // Facebook/Meta
+  "fbclid",
+  "fb_action_ids",
+  "fb_action_types",
+  "fb_source",
+  "fb_ref",
+  // Instagram
+  "igshid",
+  "ig_rid",
+  // Twitter/X
+  "twclid",
+  "tw_source",
+  // LinkedIn
+  "li_fat_id",
+  "lipi",
+  "licu",
+  // TikTok
+  "ttclid",
+  "tt_medium",
+  "tt_content",
+  // Snapchat
+  "ScCid",
+  // Pinterest
+  "epik",
+];
 
+export const ADVERTISING_PARAMS = [
+  // Google Ads & Click IDs
+  "gclid",
+  "gclsrc",
+  "dclid",
+  "gbraid",
+  "wbraid",
+  // Microsoft/Bing
+  "msclkid",
+  "ms_clkid",
+];
+
+export const GENERAL_TRACKING_PARAMS = [
   // Other Common Tracking
   "ref",
   "source",
@@ -115,16 +115,6 @@ export const TRACKING_PARAMS: string[] = [
   "target",
   "gad_source",
   "gad",
-
-  // Marketo
-  "mkt_tok",
-
-  // Drip
-  "__s",
-
-  // Klaviyo
-  "_kx",
-
   // Referral/Share Tracking
   "share",
   "shared",
