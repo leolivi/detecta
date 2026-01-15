@@ -1,11 +1,7 @@
 /*
 Tracking parameters commonly used for URL decoration and attribution
-Sources:
-// TODO: add sources to readme!
-  - ClearURLs: https://github.com/ClearURLs/Rules
-  - AdGuard Tracking Parameters: https://github.com/AdguardTeam/AdguardFilters
-  - uBlock Origin: https://github.com/uBlockOrigin/uAssets
-  -> categorized sources with ai assistance
+
+Source: Generated with AI (Chat GPT), based on common industry patterns 
 */
 
 export const UTM_PARAMS = [
@@ -129,8 +125,6 @@ export const GENERAL_TRACKING_PARAMS = [
 /*
  Redirector patterns commonly found in redirect chains
   These appear in URL paths or hostnames
-  Sources:
-  - ClearURLs redirect analysis
 */
 export const REDIRECTOR_PARAMS: string[] = [
   "redirect",
@@ -154,8 +148,6 @@ export const REDIRECTOR_PARAMS: string[] = [
 
 /*
   URL Shortener domains
-  Sources:
-  - ClearURLs shortener list
 */
 export const URL_SHORTENER_PARAMS: string[] = [
   // Major platforms
@@ -196,9 +188,6 @@ export const URL_SHORTENER_PARAMS: string[] = [
 
 /*
  Affiliate parameters used for commission tracking
- Sources:
-  - ClearURLs affiliate tracking
-  - AdGuard affiliate filters
  */
 export const AFFILIATE_PARAMS: string[] = [
   // Generic affiliate parameters
@@ -256,8 +245,6 @@ export const AFFILIATE_PARAMS: string[] = [
 
 /* -----
   Known tracker pixel dataset 
-  sources:
-  - Source: Chat GPT
 ----- */
 
 export const TRACKING_PIXEL_KEYWORDS = {
@@ -279,8 +266,6 @@ export const TRACKING_PIXEL_KEYWORDS = {
 
 /* -----
   Known ad keywords dataset 
-  sources:
-  - Source: Chat GPT
 ----- */
 
 export const AD_KEYWORDS = [
