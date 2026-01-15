@@ -14,6 +14,7 @@ import {
   findTrackerDomain,
   hasHashParam,
   hasParamMatch,
+  isInternalNavigation,
   isRedirectURL,
   isSocialDomain,
   notifyServiceWorker,
@@ -38,6 +39,12 @@ export function detectTrackingLinks(): DetectionResult[] {
 
     try {
       const url = new URL(link.href, window.location.href);
+
+      // ignore internal hashes
+      if (isInternalNavigation(url, window.location)) {
+        return;
+      }
+
       const params = extractTrackingParams(url.href);
 
       // check hash fragments

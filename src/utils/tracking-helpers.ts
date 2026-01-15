@@ -101,3 +101,24 @@ export function isRedirectURL(url: URL) {
   }
   return false;
 }
+
+// function that excludes navigation hashes
+export function isInternalNavigation(
+  url: URL,
+  currentLocation: Location
+): boolean {
+  if (
+    url.origin !== currentLocation.origin ||
+    url.pathname !== currentLocation.pathname
+  ) {
+    return false;
+  }
+
+  if (!url.hash) return false;
+
+  // Hash ohne = (z.B. #section statt #param=value)
+  if (!url.hash.includes("=")) return true;
+
+  // Hash hat =, könnte Tracking sein
+  return false;
+}

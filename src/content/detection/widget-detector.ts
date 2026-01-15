@@ -15,7 +15,7 @@ const processedWidgets = new Set<string>();
 export function detectTrackingWidgets(): DetectionResult[] {
   const results: DetectionResult[] = [];
   const widgets = document.querySelectorAll<HTMLElement>(
-    'div[class*="fb-"], div[class*="twitter-"], div[id*="fb-root"], a[class*="share"]'
+    'div[class*="fb-"], div[class*="twitter-"], div[class*="pinterest-"], div[class*="linkedin-"], div[class*="instagram-"], div[id*="fb-root"], a[class*="share"], div[data-pin-do]'
   );
 
   widgets.forEach((widget) => {
@@ -25,6 +25,11 @@ export function detectTrackingWidgets(): DetectionResult[] {
     // check if iframe is within the widget
     const iframe = widget.querySelector("iframe");
     const src = iframe?.src || "";
+
+    // skip if already detected as an iframe
+    if (iframe?.dataset.iframeAnalyzed === "true") {
+      return;
+    }
 
     if (src) {
       // if false positive, skip

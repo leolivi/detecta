@@ -1,6 +1,7 @@
 /*
 Tracking parameters commonly used for URL decoration and attribution
 Sources:
+// TODO: add sources to readme!
   - ClearURLs: https://github.com/ClearURLs/Rules
   - AdGuard Tracking Parameters: https://github.com/AdguardTeam/AdguardFilters
   - uBlock Origin: https://github.com/uBlockOrigin/uAssets
@@ -263,17 +264,16 @@ export const TRACKING_PIXEL_KEYWORDS = {
   prefix: ["data:image"],
   includes: [
     "pixel",
-    "track",
+    "tracker",
     "tracking",
     "impression",
     "beacon",
     "collect",
     "measure",
-    "stats",
-    "stat",
+    "analytics",
     "event",
     "hit",
-    "log",
+    "logger",
   ],
 };
 

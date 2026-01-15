@@ -55,10 +55,24 @@ export function detectTrackingPixels(): DetectionResult[] {
 function looksLikeTrackingPixel(src: string): boolean {
   const lower = src.toLowerCase();
 
+  // exclude own domain
+  if (lower.includes(window.location.hostname)) {
+    return false;
+  }
+
+  //  exclude normal images with normal paths
+  if (
+    /\/(images?|img|assets|media)\/.*\.(png|jpg|jpeg|gif|svg|webp)$/i.test(src)
+  ) {
+    return false;
+  }
+
+  // prefix check
   if (TRACKING_PIXEL_KEYWORDS.prefix.some((p: string) => lower.startsWith(p))) {
     return true;
   }
 
+  // keyword check
   if (TRACKING_PIXEL_KEYWORDS.includes.some((t: string) => lower.includes(t))) {
     return true;
   }
