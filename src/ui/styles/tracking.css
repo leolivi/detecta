@@ -64,19 +64,19 @@
 }
 
 .chart-3.tracking-hotspot::after {
-  background-color: oklch(0.7 0.25 260);
+  background-color: oklch(66.163% 0.18374 253.923 / 0.7);
 }
 
 .chart-4.tracking-hotspot::after {
-  background-color: oklch(0.78 0.22 330);
+  background-color: oklch(0.78 0.22 330 / 0.7);
 }
 
 .chart-5.tracking-hotspot::after {
-  background-color: oklch(0.74 0.24 85);
+  background-color: oklch(0.74 0.24 85 / 0.7);
 }
 
 .chart-6.tracking-hotspot::after {
-  background-color: oklch(0.6 0.24 300);
+  background-color: oklch(0.6 0.24 300 / 0.7);
 }
 
 .tooltip-title {
@@ -110,18 +110,18 @@
   }
 
   .chart-3.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 260);
+    background-color: oklch(0.64 0.26 260 / 0.7);
   }
 
   .chart-4.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 330);
+    background-color: oklch(0.64 0.26 330 / 0.7);
   }
 
   .chart-5.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 85);
+    background-color: oklch(0.64 0.26 85 / 0.7);
   }
 
   .chart-6.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 300);
+    background-color: oklch(0.64 0.26 300 / 0.7);
   }
 }

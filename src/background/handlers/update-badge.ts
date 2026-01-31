@@ -14,9 +14,9 @@ function setBadge(tabId: number, count: number) {
   });
 
   // color based on tracker count
-  let color = "#2E7D32";
-  if (count > 20) color = "#C62828";
-  else if (count > 10) color = "#EF6C00";
+  let color = "#3E7F4A";     
+  if (count > 20) color = "#8F2F2F";      
+  else if (count > 10) color = "#9A5A1E";
 
   chrome.action.setBadgeBackgroundColor({
     color,

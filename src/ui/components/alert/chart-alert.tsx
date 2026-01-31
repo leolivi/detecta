@@ -76,12 +76,12 @@ export function ChartAlert({
   // UI if no data at all -> service worker was asleep
   if (!hasData) {
     return (
-      <Alert variant="destructive" className="mb-4 border-red-500 bg-red-50">
-        <AlertCircle className="h-4 w-4 text-red-600" />
-        <AlertTitle className="text-red-900">
+      <Alert variant="destructive" className="mb-4 border-[#8F2F2F] bg-[#F3EAEA]">
+        <AlertCircle className="h-4 w-4 text-[#8F2F2F]" />
+        <AlertTitle className="text-[#5F1F1F]">
           No Tracking Data Available
         </AlertTitle>
-        <AlertDescription className="flex items-center justify-between text-red-800">
+        <AlertDescription className="flex items-center justify-between text-[#6F2A2A]">
           <span>
             The tracking scanner may have been inactive during page load. Please
             refresh to get current data.
@@ -90,7 +90,7 @@ export function ChartAlert({
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            className="ml-4 border-red-600 hover:bg-red-100"
+            className="ml-4 border-[#8F2F2F] hover:bg-[#E6D0D0]"
           >
             {isRefreshing ? (
               <>
@@ -114,11 +114,11 @@ export function ChartAlert({
     return (
       <Alert
         variant="destructive"
-        className="mb-4 border-yellow-500 bg-yellow-50"
+        className="mb-4  border-[#9A5A1E] bg-[#F4EEE6]"
       >
-        <AlertCircle className="h-4 w-4 text-yellow-600" />
-        <AlertTitle className="text-yellow-900">Outdated Data</AlertTitle>
-        <AlertDescription className="flex items-center justify-between text-yellow-800">
+        <AlertCircle className="h-4 w-4 text-[#9A5A1E]" />
+        <AlertTitle className="text-[#6B3F14]">Outdated Data</AlertTitle>
+        <AlertDescription className="flex items-center justify-between text-[#7A4A1A]">
           <span>
             This data is {formatAge(age)} old. Refresh for current tracking
             information.
@@ -127,7 +127,7 @@ export function ChartAlert({
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            className="ml-4 border-yellow-600 hover:bg-yellow-100"
+            className="ml-4 border-[#9A5A1E] hover:bg-[#E8DCCB]"
           >
             {isRefreshing ? (
               <>

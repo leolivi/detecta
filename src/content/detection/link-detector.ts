@@ -16,6 +16,7 @@ import {
   hasParamMatch,
   isInternalNavigation,
   isRedirectURL,
+  isSafeDomain,
   isSocialDomain,
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
@@ -42,6 +43,11 @@ export function detectTrackingLinks(): DetectionResult[] {
 
       // ignore internal hashes
       if (isInternalNavigation(url, window.location)) {
+        return;
+      }
+
+      // skip safe/trusted domains
+      if (isSafeDomain(url.hostname)) {
         return;
       }
 

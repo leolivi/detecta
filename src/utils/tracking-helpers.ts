@@ -1,4 +1,8 @@
-import {IS_SOCIAL_DOMAIN} from "@/data/false-positive-list";
+import {
+  IS_SOCIAL_DOMAIN,
+  SAFE_DOMAINS,
+  TRACKER_DOMAIN_EXCLUSIONS,
+} from "@/data/false-positive-list";
 import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {
   ADVERTISING_PARAMS,
@@ -65,10 +69,27 @@ export function isSocialDomain(hostname: string): boolean {
   return IS_SOCIAL_DOMAIN.some((d) => hostname.includes(d));
 }
 
+// check if domain is a safe/trusted domain
+export function isSafeDomain(hostname: string): boolean {
+  return SAFE_DOMAINS.some(
+    (d) => hostname === d || hostname.endsWith("." + d)
+  );
+}
+
 // function to find tracker domain and its purpose
 export function findTrackerDomain(url: URL): TrackerPurpose | null {
+  const hostname = url.hostname;
+
+  // exclude known legitimate domains from tracker matching
+  if (
+    TRACKER_DOMAIN_EXCLUSIONS.some(
+      (d) => hostname === d || hostname.endsWith("." + d)
+    )
+  ) {
+    return null;
+  }
+
   const trackerInfo = TRACKING_DOMAINS.find((t) => {
-    const hostname = url.hostname;
     return (
       hostname === t.domain ||
       hostname.endsWith("." + t.domain) ||
