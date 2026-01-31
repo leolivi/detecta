@@ -23,15 +23,12 @@ export function Glossary() {
           </TableHeader>
           <TableBody>
             {GLOSSARY_ENTRIES.map((entry) => (
-              <TableRow key={entry.category}>
-                <TableCell className="font-medium">
-                  <div
-                    className="w-10 h-10 border border-gray-300 rounded"
-                    style={{
-                      cursor: entry.icon,
-                    }}
-                    title={entry.category}
-                  />
+              <TableRow 
+                key={entry.category}
+              
+              >
+                <TableCell>
+                  <img src={entry.icon} alt={entry.category} className="w-6 h-6" />
                 </TableCell>
                 <TableCell className="font-semibold">
                   {entry.category}

@@ -3,7 +3,7 @@ import {createRoot, type Root} from "react-dom/client";
 import {HotspotTooltip} from "../tooltip/hotspot-tooltip";
 
 const hotspotRegistry = new Map<
-  string,
+  HTMLElement,
   {
     portal: HTMLDivElement;
     root: Root;
@@ -14,25 +14,63 @@ const hotspotRegistry = new Map<
   }
 >();
 
+function ensurePositioned(el: HTMLElement): void {
+  const style = getComputedStyle(el);
+  if (style.position === "static") {
+    el.style.position = "relative";
+  }
+}
+
+function isElementVisible(el: HTMLElement): boolean {
+  const rect = el.getBoundingClientRect();
+  const style = getComputedStyle(el);
+  return (
+    rect.width > 10 &&
+    rect.height > 10 &&
+    style.display !== "none" &&
+    style.visibility !== "hidden" &&
+    !(el instanceof HTMLScriptElement)
+  );
+}
+
+function findVisibleParent(el: HTMLElement): HTMLElement | null {
+  let current = el.parentElement;
+  while (current && current !== document.body) {
+    if (isElementVisible(current)) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
 export function addHotspotWithTooltip(
+  element: HTMLElement,
   src: string,
-  x: number,
-  y: number,
   trackingParams: Record<string, string>,
   method: TrackingMethod,
   purpose?: TrackerPurpose | null
 ) {
-  const posKey = `${Math.round(x)},${Math.round(y)}-${method}`;
+  // Find the target element to attach the hotspot to
+  let targetElement = element;
+  let useBodyFallback = false;
 
-  // already an existing hotspot in this position?
-  const existing = hotspotRegistry.get(posKey);
+  if (!isElementVisible(element)) {
+    const visibleParent = findVisibleParent(element);
+    if (visibleParent) {
+      targetElement = visibleParent;
+    } else {
+      useBodyFallback = true;
+    }
+  }
+
+  // already an existing hotspot for this element?
+  const existing = hotspotRegistry.get(targetElement);
 
   if (existing) {
-    // add souirce and merge trackin gparams
     existing.sources.push(src);
     Object.assign(existing.trackingParams, trackingParams);
 
-    // re-render wwith new count
     existing.root.render(
       <HotspotTooltip
         sources={existing.sources}
@@ -44,44 +82,50 @@ export function addHotspotWithTooltip(
     return;
   }
 
-  // new hotspot
+  if (!useBodyFallback) {
+    ensurePositioned(targetElement);
+  }
+
   const portal = document.createElement("div");
   portal.className = "tracking-hotspot-wrapper";
 
-  let xOffset = 0;
-  let yOffset = 0;
+  let offset = 0;
 
   switch (method) {
     case TrackingMethod.PIXEL:
       portal.style.zIndex = "100000";
-      xOffset = 0;
-      yOffset = 0;
+      offset = 0;
       break;
     case TrackingMethod.IFRAME:
       portal.style.zIndex = "110000";
-      xOffset = 10;
-      yOffset = 10;
+      offset = 10;
       break;
     case TrackingMethod.SCRIPT:
       portal.style.zIndex = "120000";
-      xOffset = 10;
-      yOffset = 10;
+      offset = 10;
       break;
     case TrackingMethod.WIDGET:
       portal.style.zIndex = "130000";
-      xOffset = 10;
-      yOffset = 10;
+      offset = 10;
       break;
     default:
       portal.style.zIndex = "100000";
-      xOffset = 0;
-      yOffset = 0;
+      offset = 0;
       break;
   }
 
-  portal.style.left = `${x + xOffset}px`;
-  portal.style.top = `${y + yOffset}px`;
-  document.body.appendChild(portal);
+  portal.style.position = "absolute";
+
+  if (useBodyFallback) {
+    const rect = element.getBoundingClientRect();
+    portal.style.top = `${rect.top + window.scrollY + offset}px`;
+    portal.style.left = `${rect.left + window.scrollX + offset}px`;
+    document.body.appendChild(portal);
+  } else {
+    portal.style.top = `${offset}px`;
+    portal.style.left = `${offset}px`;
+    targetElement.appendChild(portal);
+  }
 
   const root = createRoot(portal);
   const sources = [src];
@@ -95,7 +139,7 @@ export function addHotspotWithTooltip(
     />
   );
 
-  hotspotRegistry.set(posKey, {
+  hotspotRegistry.set(element, {
     portal,
     root,
     sources,

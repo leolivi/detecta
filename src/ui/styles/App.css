@@ -1,6 +1,12 @@
 #root {
   max-width: 100%;
+
   padding: 1rem;
+  background-color: #F6F7F5;
+
+@media (prefers-color-scheme: dark) {
+  background-color: #121212;
+}
 }
 
 h1 {

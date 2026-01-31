@@ -195,6 +195,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
+/* ---- SIDE PANEL ---- */
+chrome.sidePanel
+  .setPanelBehavior({openPanelOnActionClick: true})
+  .catch((error) => console.error(error));
+
 /* ---- TAB UPDATE HANDLER ---- */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
   // Reset cache when page is loading

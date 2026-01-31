@@ -1,49 +1,48 @@
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
-import {changeCursor} from "./change-cursor";
-import {CursorStyles} from "@/types/cursor";
+import type {CursorIconType} from "@/types/cursor";
+import {showCursorIcon, hideCursorIcon} from "./cursor-follower";
 
-// function add hover effect to tracked links
 export function addLinkHoverEffect(
   element: HTMLElement,
   method: TrackingMethod | null,
   purpose: TrackerPurpose | null
 ) {
-  const cursorStyle = resolveCursorStyle(method, purpose);
+  const iconType = resolveCursorIcon(method, purpose);
 
   element.addEventListener("mouseenter", () => {
-    changeCursor(element, cursorStyle);
+    showCursorIcon(iconType);
   });
 
   element.addEventListener("mouseleave", () => {
-    changeCursor(element, CursorStyles.NORMAL);
+    hideCursorIcon();
   });
 }
 
-export function resolveCursorStyle(
+export function resolveCursorIcon(
   method: TrackingMethod | null,
   purpose: TrackerPurpose | null
-): CursorStyles {
+): CursorIconType {
   if (method) {
     switch (method) {
       case TrackingMethod.AFFILIATE:
-        return CursorStyles.AFFILIATE;
+        return "AFFILIATE";
       case TrackingMethod.SHORTENER:
-        return CursorStyles.SHORTENER;
+        return "SHORTENER";
       case TrackingMethod.REDIRECTOR:
-        return CursorStyles.REDIRECTOR;
+        return "REDIRECTOR";
       case TrackingMethod.URL_DECORATION:
-        return CursorStyles.URL_DECORATION;
+        return "URL_DECORATION";
     }
   }
 
   switch (purpose) {
     case TrackerPurpose.AD:
-      return CursorStyles.AD;
+      return "AD";
     case TrackerPurpose.ANALYTICS:
-      return CursorStyles.ANALYTICS;
+      return "ANALYTICS";
     case TrackerPurpose.SOCIAL:
-      return CursorStyles.SOCIAL;
+      return "SOCIAL";
     default:
-      return CursorStyles.UNKNOWN;
+      return "UNKNOWN";
   }
 }

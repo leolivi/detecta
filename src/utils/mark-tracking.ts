@@ -30,15 +30,7 @@ export function markTracking(results: DetectionResult[]): void {
     }
 
     // Everything else gets hotspot
-    const rect = element.getBoundingClientRect();
-    addHotspotWithTooltip(
-      url,
-      rect.left + window.scrollX,
-      rect.top + window.scrollY,
-      params,
-      method!,
-      purpose
-    );
+    addHotspotWithTooltip(element, url, params, method!, purpose);
   });
 }
 

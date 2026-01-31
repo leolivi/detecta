@@ -56,11 +56,11 @@
 }
 
 .chart-5 {
-  background: oklch(0.828 0.189 84.429);
+  background: oklch(0.74 0.24 85);
 }
 
 .chart-6 {
-  background: oklch(0.6 0.24 300);
+  background: oklch(0.74 0.24 300);
 }
 
 .chart-3.tracking-hotspot::after {
@@ -72,7 +72,7 @@
 }
 
 .chart-5.tracking-hotspot::after {
-  background-color: oklch(0.828 0.189 84.429);
+  background-color: oklch(0.74 0.24 85);
 }
 
 .chart-6.tracking-hotspot::after {
@@ -94,34 +94,34 @@
 
 @media (prefers-color-scheme: dark) {
   .chart-3 {
-    background: oklch(0.63 0.27 260);
+    background: oklch(0.64 0.26 260);
   }
 
   .chart-4 {
-    background: oklch(0.66 0.26 330);
+    background: oklch(0.64 0.26 330);
   }
 
   .chart-5 {
-    background: oklch(0.72 0.2 90);
+    background: oklch(0.64 0.26 85);
   }
 
   .chart-6 {
-    background: oklch(0.5 0.25 300);
+    background: oklch(0.64 0.26 300);
   }
 
   .chart-3.tracking-hotspot::after {
-    background-color: oklch(0.63 0.27 260);
+    background-color: oklch(0.64 0.26 260);
   }
 
   .chart-4.tracking-hotspot::after {
-    background-color: oklch(0.66 0.26 330);
+    background-color: oklch(0.64 0.26 330);
   }
 
   .chart-5.tracking-hotspot::after {
-    background-color: oklch(0.72 0.2 90);
+    background-color: oklch(0.64 0.26 85);
   }
 
   .chart-6.tracking-hotspot::after {
-    background-color: oklch(0.5 0.25 300);
+    background-color: oklch(0.64 0.26 300);
   }
 }

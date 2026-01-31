@@ -106,21 +106,21 @@ h2 {
     border-color: hsl(var(--border));
   }
 
-  :root {
-    --chart-1: oklch(0.82 0.25 25);
-    --chart-2: oklch(0.75 0.22 140);
-    --chart-3: oklch(0.7 0.25 260);
-    --chart-4: oklch(0.78 0.22 330);
-    --chart-5: oklch(0.828 0.189 84.429);
-    --chart-6: oklch(0.6 0.24 300);
-  }
+:root {
+  --chart-1: oklch(0.74 0.24 25);
+  --chart-2: oklch(0.74 0.24 140);
+  --chart-3: oklch(0.74 0.24 260);
+  --chart-4: oklch(0.74 0.24 330);
+  --chart-5: oklch(0.74 0.24 85);
+  --chart-6: oklch(0.74 0.24 300);
+}
 
-  .dark {
-    --chart-1: oklch(0.65 0.27 25);
-    --chart-2: oklch(0.6 0.25 140);
-    --chart-3: oklch(0.63 0.27 260);
-    --chart-4: oklch(0.66 0.26 330);
-    --chart-5: oklch(0.72 0.2 90);
-    --chart-6: oklch(0.5 0.25 300);
-  }
+.dark {
+  --chart-1: oklch(0.64 0.26 25);
+  --chart-2: oklch(0.64 0.26 140);
+  --chart-3: oklch(0.64 0.26 260);
+  --chart-4: oklch(0.64 0.26 330);
+  --chart-5: oklch(0.64 0.26 85);
+  --chart-6: oklch(0.64 0.26 300);
+}
 }

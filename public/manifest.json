@@ -1,17 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Detecta",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Hover to reveal hidden tracking",
   "action": {
-    "default_popup": "index.html",
     "default_icon": "img/logo/logo64.png"
+  },
+  "side_panel": {
+    "default_path": "index.html"
   },
   "icons": {
     "32": "img/logo/logo32.png",
     "64": "img/logo/logo64.png"
   },
-  "permissions": ["webRequest", "tabs", "storage"],
+  "permissions": ["webRequest", "tabs", "storage", "sidePanel"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "src/background/service-worker.ts",

@@ -1,34 +1,38 @@
-import {CursorStyles} from "@/types/cursor";
+import {CursorIcons, type CursorIconType} from "@/types/cursor";
 
 export interface GlossaryEntry {
-  icon: CursorStyles;
+  icon: string;
   category: string;
   description: string;
   type: "method" | "purpose";
 }
 
+function getIconUrl(key: NonNullable<CursorIconType>): string {
+  return CursorIcons[key];
+}
+
 export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
   // Tracking Methods
   {
-    icon: CursorStyles.AFFILIATE,
+    icon: getIconUrl("AFFILIATE"),
     category: "Affiliate",
     description: "Links that earn commission when you make a purchase",
     type: "method",
   },
   {
-    icon: CursorStyles.SHORTENER,
+    icon: getIconUrl("SHORTENER"),
     category: "URL Shortener",
     description: "Shortened links (bit.ly, t.co) that track clicks",
     type: "method",
   },
   {
-    icon: CursorStyles.REDIRECTOR,
+    icon: getIconUrl("REDIRECTOR"),
     category: "Redirector",
     description: "Links that redirect through tracking servers",
     type: "method",
   },
   {
-    icon: CursorStyles.URL_DECORATION,
+    icon: getIconUrl("URL_DECORATION"),
     category: "URL Parameters",
     description: "Tracking parameters added to URLs (utm_, fbclid, gclid)",
     type: "method",
@@ -36,25 +40,25 @@ export const GLOSSARY_ENTRIES: GlossaryEntry[] = [
 
   // Tracking Purposes
   {
-    icon: CursorStyles.AD,
+    icon: getIconUrl("AD"),
     category: "Advertising",
     description: "Ad networks and advertising trackers",
     type: "purpose",
   },
   {
-    icon: CursorStyles.ANALYTICS,
+    icon: getIconUrl("ANALYTICS"),
     category: "Analytics",
     description: "Website analytics and behavior tracking",
     type: "purpose",
   },
   {
-    icon: CursorStyles.SOCIAL,
+    icon: getIconUrl("SOCIAL"),
     category: "Social Media",
     description: "Social media widgets and sharing trackers",
     type: "purpose",
   },
   {
-    icon: CursorStyles.UNKNOWN,
+    icon: getIconUrl("UNKNOWN"),
     category: "Unknown",
     description: "Unclassified tracking method or purpose",
     type: "purpose",
