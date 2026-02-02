@@ -89,6 +89,13 @@ export function addHotspotWithTooltip(
   const portal = document.createElement("div");
   portal.className = "tracking-hotspot-wrapper";
 
+  // Check if hotspots should be hidden
+  chrome.storage.local.get("hotspotsVisible", (result) => {
+    if (result.hotspotsVisible === false) {
+      portal.style.display = "none";
+    }
+  });
+
   let offset = 0;
 
   switch (method) {

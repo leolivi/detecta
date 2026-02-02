@@ -5,31 +5,37 @@
 }
 
 .tracking-hotspot {
+  position: relative;
   width: 10px;
   height: 10px;
-  background: rgba(255, 0, 0, 0.3);
   border-radius: 50%;
   cursor: pointer;
+  color: inherit;
 }
 
 .tracking-hotspot::after {
-  content: " ";
+  content: "";
   position: absolute;
-  inset: 0;
+  inset: -2px;
   border-radius: 50%;
-  background-color: red;
-  animation: pulse 1.5s infinite;
-  opacity: 0.7;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: pulse 3.5s infinite;
 }
 
 @keyframes pulse {
   0% {
     transform: scale(1);
-    opacity: 0.9;
+    opacity: 0.35;
+  }
+
+  40% {
+    transform: scale(2);
+    opacity: 0;
   }
 
   100% {
-    transform: scale(2.5);
+    transform: scale(2);
     opacity: 0;
   }
 }
@@ -48,35 +54,39 @@
 }
 
 .chart-3 {
-  background: oklch(0.7 0.25 260);
+  color: oklch(0.74 0.24 260 / 0.6);
+  background: oklch(0.74 0.24 260);
 }
 
 .chart-4 {
-  background: oklch(0.78 0.22 330);
+  color: oklch(0.74 0.24 330 / 0.6);
+  background: oklch(0.74 0.24 330);
 }
 
 .chart-5 {
+  color: oklch(0.74 0.24 85 / 0.6);
   background: oklch(0.74 0.24 85);
 }
 
 .chart-6 {
+  color: oklch(0.74 0.24 300 / 0.6);
   background: oklch(0.74 0.24 300);
 }
 
 .chart-3.tracking-hotspot::after {
-  background-color: oklch(66.163% 0.18374 253.923 / 0.7);
+  background-color: oklch(0.74 0.24 260 / 0.6);
 }
 
 .chart-4.tracking-hotspot::after {
-  background-color: oklch(0.78 0.22 330 / 0.7);
+  background-color: oklch(0.74 0.24 330 / 0.6);
 }
 
 .chart-5.tracking-hotspot::after {
-  background-color: oklch(0.74 0.24 85 / 0.7);
+  background-color: oklch(0.74 0.24 85 / 0.6);
 }
 
 .chart-6.tracking-hotspot::after {
-  background-color: oklch(0.6 0.24 300 / 0.7);
+  background-color: oklch(0.74 0.24 300 / 0.6);
 }
 
 .tooltip-title {
@@ -110,18 +120,18 @@
   }
 
   .chart-3.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 260 / 0.7);
+    background-color: oklch(0.64 0.26 260 / 0.6);
   }
 
   .chart-4.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 330 / 0.7);
+    background-color: oklch(0.64 0.26 330 / 0.6);
   }
 
   .chart-5.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 85 / 0.7);
+    background-color: oklch(0.64 0.26 85 / 0.6);
   }
 
   .chart-6.tracking-hotspot::after {
-    background-color: oklch(0.64 0.26 300 / 0.7);
+    background-color: oklch(0.64 0.26 300 / 0.6);
   }
 }

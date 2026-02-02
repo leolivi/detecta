@@ -84,6 +84,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === "TOGGLE_HOTSPOTS") {
+    const hotspots = document.querySelectorAll(".tracking-hotspot-wrapper");
+    hotspots.forEach((el) => {
+      (el as HTMLElement).style.display = message.visible ? "block" : "none";
+    });
+    sendResponse({success: true});
+    return true;
+  }
+
   /* ---- Tracking Type: 
     NETWORK TRACKER (Request-Level Tracking)
   ---- */

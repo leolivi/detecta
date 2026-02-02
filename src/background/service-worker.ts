@@ -193,6 +193,19 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
     console.log("Extension installed");
   }
+
+  if (details.reason === "update" || details.reason === "install") {
+    // clear all session storage on update/install
+    await chrome.storage.session.clear();
+
+    // reload all tabs to reset detection state
+    const tabs = await chrome.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.id && tab.url && !tab.url.startsWith("chrome://")) {
+        chrome.tabs.reload(tab.id).catch(() => {});
+      }
+    }
+  }
 });
 
 /* ---- SIDE PANEL ---- */
