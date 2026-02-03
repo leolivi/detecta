@@ -1,8 +1,8 @@
 import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
 import {notifyServiceWorker} from "@/utils/tracking-helpers";
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
-import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import type {DetectionResult} from "@/types/detection-result";
+import { findTrackerByUrl } from "@/utils/tracking-url";
 
 /* ---- Tracking Type: 
    Social Media Widget Tracking – THIRD PARTY COMPONENTS
@@ -34,8 +34,8 @@ export function detectTrackingWidgets(): DetectionResult[] {
     if (src) {
       // if false positive, skip
       if (FALSE_POSITIVE_EXCLUSION_LIST.some((d) => src.includes(d))) return;
-      const trackerInfo = TRACKING_DOMAINS.find((t) => src.includes(t.domain));
-      if (trackerInfo?.purpose !== TrackerPurpose.SOCIAL) return;
+      const trackerInfo = findTrackerByUrl(src, { purposeFilter: [TrackerPurpose.SOCIAL] });
+      if (!trackerInfo) return;
     }
 
     const key =

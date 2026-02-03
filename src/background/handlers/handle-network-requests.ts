@@ -1,4 +1,5 @@
-import {TRACKING_DOMAINS} from "@/data/tracking-domains";
+
+import { findTrackerByUrl } from "@/utils/tracking-url";
 
 interface HandleNetworkRequests {
   details: chrome.webRequest.OnBeforeRequestDetails;
@@ -21,9 +22,7 @@ export function handleNetworkRequests({
   }
 
   // check if request is a tracker
-  const tracker = TRACKING_DOMAINS.find(
-    (t) => url.hostname === t.domain || url.hostname.endsWith(`.${t.domain}`)
-  );
+  const tracker = findTrackerByUrl(url);
 
   if (!tracker) return;
 

@@ -1,9 +1,7 @@
 import {
   IS_SOCIAL_DOMAIN,
   SAFE_DOMAINS,
-  TRACKER_DOMAIN_EXCLUSIONS,
 } from "@/data/false-positive-list";
-import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {
   ADVERTISING_PARAMS,
   ANALYTICS_PARAMS,
@@ -12,7 +10,7 @@ import {
   SOCIAL_PARAMS,
   UTM_PARAMS,
 } from "@/data/tracking-params";
-import type {TrackerPurpose} from "@/types/tracking-enums";
+
 
 // function to notify service worker
 export function notifyServiceWorker(type: string, key: string): void {
@@ -74,29 +72,6 @@ export function isSafeDomain(hostname: string): boolean {
   return SAFE_DOMAINS.some(
     (d) => hostname === d || hostname.endsWith("." + d)
   );
-}
-
-// function to find tracker domain and its purpose
-export function findTrackerDomain(url: URL): TrackerPurpose | null {
-  const hostname = url.hostname;
-
-  // exclude known legitimate domains from tracker matching
-  if (
-    TRACKER_DOMAIN_EXCLUSIONS.some(
-      (d) => hostname === d || hostname.endsWith("." + d)
-    )
-  ) {
-    return null;
-  }
-
-  const trackerInfo = TRACKING_DOMAINS.find((t) => {
-    return (
-      hostname === t.domain ||
-      hostname.endsWith("." + t.domain) ||
-      hostname.includes(t.domain)
-    );
-  });
-  return trackerInfo?.purpose || null;
 }
 
 // function to check if any param matches from a given list

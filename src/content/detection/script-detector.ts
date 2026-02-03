@@ -4,8 +4,8 @@ import {
 } from "@/utils/tracking-helpers";
 import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
 import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
-import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import type {DetectionResult} from "@/types/detection-result";
+import { findTrackerByUrl } from "@/utils/tracking-url";
 
 /* ---- Tracking Type: 
    Script Tracking – THIRD PARTY COMPONENTS
@@ -30,16 +30,7 @@ export function detectTrackingScripts(): DetectionResult[] {
     if (FALSE_POSITIVE_EXCLUSION_LIST.some((d) => src.includes(d))) return;
 
     // check tracking domain lists
-    const trackerInfo = TRACKING_DOMAINS.find((t) => {
-      try {
-        const url = new URL(src);
-        return (
-          url.hostname.includes(t.domain) || t.domain.includes(url.hostname)
-        );
-      } catch {
-        return src.includes(t.domain);
-      }
-    });
+    const trackerInfo = findTrackerByUrl(src);
 
     if (!trackerInfo || trackerInfo.purpose === TrackerPurpose.SOCIAL) return;
 

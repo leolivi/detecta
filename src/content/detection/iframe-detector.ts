@@ -3,9 +3,9 @@ import {
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
 import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
-import {TRACKING_DOMAINS} from "@/data/tracking-domains";
 import {TrackingMethod} from "@/types/tracking-enums";
 import type {DetectionResult} from "@/types/detection-result";
+import { findTrackerByUrl } from "@/utils/tracking-url";
 
 /* ---- Tracking Type: 
    IFrame Tracking – THIRD PARTY COMPONENTS
@@ -32,7 +32,7 @@ export function detectTrackingIframes(): DetectionResult[] {
     if (FALSE_POSITIVE_EXCLUSION_LIST.some((d) => src.includes(d))) return;
 
     // check tracking domain lists
-    const trackerInfo = TRACKING_DOMAINS.find((t) => src.includes(t.domain));
+    const trackerInfo = findTrackerByUrl(src);
     if (!trackerInfo) return;
 
     // if already processed, skip, else add to src

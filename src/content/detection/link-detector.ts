@@ -11,7 +11,6 @@ import {
 
 import {
   extractTrackingParams,
-  findTrackerDomain,
   hasHashParam,
   hasParamMatch,
   isInternalNavigation,
@@ -21,6 +20,7 @@ import {
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
 import type {DetectionResult} from "@/types/detection-result";
+import { findTrackerByUrl } from "@/utils/tracking-url";
 
 /* ---- Tracking Type: 
   Click Based Link Tracking 
@@ -61,7 +61,8 @@ export function detectTrackingLinks(): DetectionResult[] {
       const hasGeneralHash = hasHashParam(url.hash, GENERAL_TRACKING_PARAMS);
 
       // check tracker domain
-      let purpose: TrackerPurpose | null = findTrackerDomain(url);
+      const tracker = findTrackerByUrl(url);
+      let purpose: TrackerPurpose | null = tracker?.purpose || null;
 
       // skip social domains without tracking params
       if (isSocialDomain(url.hostname)) {
