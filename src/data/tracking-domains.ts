@@ -1,5 +1,5 @@
 import {TrackerPurpose} from "../types/tracking-enums";
-import trackerDataRaw from "./tracker.json";
+import trackerCoreData from "./tracker-core.json";
 
 /* -----
   Known tracker domains dataset 
@@ -50,17 +50,47 @@ function mapToPurpose(categories: string[]): TrackerPurpose {
 
 export const TRACKER_MAP = new Map<string, TrackerDomain>();
 
+
 // known tracker domains and their types detectetd in network requests
-Object.entries(trackerDataRaw.trackers).forEach(([domain, data]: [string, CompressedTracker]) => {
-  TRACKER_MAP.set(domain, {
-    domain,
-    owner: data.o,
-    categories: data.c,
-    purpose: mapToPurpose(data.c),
-    prevalence: data.p,
-    fingerprinting: data.f,
-  });
-});
+// load core data (first badge)
+Object.entries(trackerCoreData.trackers as Record<string, CompressedTracker>).forEach(
+  ([domain, data]) => {
+    TRACKER_MAP.set(domain, {
+      domain,
+      owner: data.o,
+      categories: data.c,
+      purpose: mapToPurpose(data.c),
+      prevalence: data.p,
+      fingerprinting: data.f,
+    });
+  }
+);
+
+// load extended data (second badge, lazy load)
+setTimeout(async () => {
+  try {
+    const response = await fetch(chrome.runtime.getURL("src/data/tracker-extended.json"));
+    const extendedData = await response.json();
+    
+    Object.entries(extendedData.trackers as Record<string, CompressedTracker>).forEach(
+      ([domain, data]) => {
+        if (!TRACKER_MAP.has(domain)) {
+          TRACKER_MAP.set(domain, {
+            domain,
+            owner: data.o,
+            categories: data.c,
+            purpose: mapToPurpose(data.c),
+            prevalence: data.p,
+            fingerprinting: data.f,
+          });
+        }
+      }
+    );
+    console.log(`Loaded ${TRACKER_MAP.size} total trackers`);
+  } catch (e) {
+    console.warn("Could not load extended trackers", e);
+  }
+}, 2000);
 
 
 

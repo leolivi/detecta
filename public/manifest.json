@@ -29,7 +29,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["img/*.png", "src/data/tracker.json"],
+      "resources": ["img/*.png", "src/data/tracker-core.json", "src/data/tracker-extended.json"],
       "matches": ["<all_urls>"]
     }
   ]
