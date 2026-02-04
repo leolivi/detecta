@@ -97,7 +97,6 @@ export const ADVERTISING_PARAMS = [
 export const GENERAL_TRACKING_PARAMS = [
   // Other Common Tracking
   "ref",
-  "source",
   "src",
   "campaign",
   "campaignid",

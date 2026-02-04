@@ -19,6 +19,7 @@ import {
   isSafeDomain,
   isSocialDomain,
   notifyServiceWorker,
+  shouldIgnoreSameSiteParams,
 } from "@/utils/tracking-helpers";
 import { findTrackerByUrl } from "@/utils/tracking-url";
 
@@ -52,6 +53,9 @@ export function detectTrackingLinks(): DetectionResult[] {
       }
 
       const params = extractTrackingParams(url.href);
+      if (shouldIgnoreSameSiteParams(url, params)) {
+        return;
+      }
 
       // check hash fragments
       const hasUTMHash = hasHashParam(url.hash, UTM_PARAMS);
@@ -63,6 +67,14 @@ export function detectTrackingLinks(): DetectionResult[] {
       // check tracker domain
       const tracker = findTrackerByUrl(url);
       let purpose: TrackerPurpose | null = tracker?.purpose || null;
+      if (
+        purpose === TrackerPurpose.AD &&
+        Object.keys(params).length === 0 &&
+        !hasAdvertisingHash &&
+        !isRedirectURL(url)
+      ) {
+        purpose = null;
+      }
 
       // skip social domains without tracking params
       if (isSocialDomain(url.hostname)) {

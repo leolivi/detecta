@@ -32,6 +32,38 @@ export function notifyServiceWorker(type: string, key: string): void {
 
 /* ---- Tracking Type: Click Based HREF's 
 -> helper functions for link detection ---- */
+// values that look like real tracking identifiers (not UI / feature flags)
+export function looksLikeTrackingValue(value: string): boolean {
+  if (!value) return false;
+
+  // long & high-entropy ids
+  if (value.length >= 20 && /[a-f0-9]{6,}/i.test(value)) {
+    return true;
+  }
+
+  // multi-part identifiers (utm style)
+  if (value.split("_").length >= 4) {
+    return true;
+  }
+
+  // base64 / encoded blobs
+  if (/^[A-Za-z0-9+/=]{20,}$/.test(value)) {
+    return true;
+  }
+
+  return false;
+}
+
+// feature flags & rollout params are NOT tracking
+const FEATURE_FLAG_PATTERNS = [
+  /rollout/i,
+  /experiment/i,
+  /variant/i,
+  /feature/i,
+  /test/i,
+  /v\d+/i,
+];
+
 // checks if a tracker comes with params
 export function extractTrackingParams(url: string): Record<string, string> {
   const params: Record<string, string> = {};
@@ -43,13 +75,18 @@ export function extractTrackingParams(url: string): Record<string, string> {
       const urlObj = new URL(url);
       urlObj.searchParams.forEach((value, key) => {
         const lowerKey = key.toLowerCase();
-        if (
+        if (FEATURE_FLAG_PATTERNS.some((r) => r.test(key))) {
+          return;
+        }
+        const isKnownTrackingKey =
           UTM_PARAMS.some((p) => lowerKey.startsWith(p)) ||
           ANALYTICS_PARAMS.some((p) => lowerKey.startsWith(p)) ||
           SOCIAL_PARAMS.some((p) => lowerKey.startsWith(p)) ||
           ADVERTISING_PARAMS.some((p) => lowerKey.startsWith(p)) ||
-          GENERAL_TRACKING_PARAMS.some((p) => lowerKey.startsWith(p))
-        ) {
+          GENERAL_TRACKING_PARAMS.some((p) => lowerKey.startsWith(p));
+
+        // only accept if the value actually looks like tracking
+        if (isKnownTrackingKey && looksLikeTrackingValue(value)) {
           params[key] = value;
         }
       });
@@ -96,6 +133,21 @@ export function redetectAdsByDomain(domain: string): DetectionResult[] {
 }
 
 // ------------ Link Tracking Detection Helper Functions ------------ //
+// ignore same-site params unless explicit UTM-style tracking
+export function shouldIgnoreSameSiteParams(
+  url: URL,
+  params: Record<string, string>,
+): boolean {
+  const isSameSite = url.hostname === window.location.hostname;
+
+  if (!isSameSite) return false;
+
+  // allow explicit campaign tracking
+  return !Object.keys(params).some((k) =>
+    UTM_PARAMS.some((p) => k.toLowerCase().startsWith(p)),
+  );
+}
+
 // check if hash fragment contains tracking params
 export function hasHashParam(hash: string, params: string[]): boolean {
   if (hash.length <= 1) return false;
@@ -184,6 +236,12 @@ export function looksLikeTrackingPixel(src: string): boolean {
   if (TRACKING_PIXEL_KEYWORDS.includes.some((t: string) => lower.includes(t))) {
     return true;
   }
+
+  // UUID / Hash / lange IDs
+  if (src.length > 20 && /[a-f0-9]{8,}/i.test(src)) return true;
+
+  // multiple segments / encoded blobs
+  if (src.split("_").length > 3) return true;
 
   return false;
 }
