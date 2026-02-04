@@ -1,17 +1,22 @@
+import { detectAdvertisements } from "@/content/detection/ad-detector";
 import {
+  COOKIE_BANNER_KEYWORDS,
   IS_SOCIAL_DOMAIN,
   SAFE_DOMAINS,
 } from "@/data/false-positive-list";
 import {
+  AD_KEYWORDS,
   ADVERTISING_PARAMS,
   ANALYTICS_PARAMS,
   GENERAL_TRACKING_PARAMS,
   REDIRECTOR_PARAMS,
   SOCIAL_PARAMS,
+  TRACKING_PIXEL_KEYWORDS,
   UTM_PARAMS,
 } from "@/data/tracking-params";
+import type { DetectionResult } from "@/types/detection-result";
 
-
+// ------------ General Helper Functions for Tracking Detection ------------ //
 // function to notify service worker
 export function notifyServiceWorker(type: string, key: string): void {
   try {
@@ -19,7 +24,7 @@ export function notifyServiceWorker(type: string, key: string): void {
       console.debug("Extension context invalidated - bitte Seite neu laden");
       return;
     }
-    chrome.runtime.sendMessage({type, key});
+    chrome.runtime.sendMessage({ type, key });
   } catch (e) {
     console.debug("Service Worker could not be notified", e);
   }
@@ -55,6 +60,42 @@ export function extractTrackingParams(url: string): Record<string, string> {
   return params;
 }
 
+// ------------ Ad Tracking Detection Helper Functions ------------ //
+export function isAdvertisement(iframe: HTMLIFrameElement): boolean {
+  const src = iframe.src || "";
+  const id = iframe.id || "";
+  const title = iframe.title || "";
+
+  const srcMatch = AD_KEYWORDS.some((kw) => src.includes(kw));
+  const attrMatch =
+    id.toLowerCase().includes("ad") || title.toLowerCase().includes("ad");
+  const emptyButLikelyAd = (!src || src === "about:blank") && attrMatch;
+
+  const basicAd = srcMatch || attrMatch || emptyButLikelyAd;
+
+  // exclude cookie and consent banners (false positives)
+  const isCookieBanner =
+    COOKIE_BANNER_KEYWORDS.some((kw) => src.toLowerCase().includes(kw)) ||
+    COOKIE_BANNER_KEYWORDS.some((kw) => id.toLowerCase().includes(kw)) ||
+    COOKIE_BANNER_KEYWORDS.some((kw) => title.toLowerCase().includes(kw));
+
+  return basicAd && !isCookieBanner;
+}
+
+export function redetectAdsByDomain(domain: string): DetectionResult[] {
+  const iframes = document.querySelectorAll<HTMLIFrameElement>("iframe");
+
+  iframes.forEach((iframe) => {
+    const src = iframe.src || "";
+    if (src.includes(domain)) {
+      delete iframe.dataset.adAnalyzed;
+    }
+  });
+
+  return detectAdvertisements();
+}
+
+// ------------ Link Tracking Detection Helper Functions ------------ //
 // check if hash fragment contains tracking params
 export function hasHashParam(hash: string, params: string[]): boolean {
   if (hash.length <= 1) return false;
@@ -69,18 +110,16 @@ export function isSocialDomain(hostname: string): boolean {
 
 // check if domain is a safe/trusted domain
 export function isSafeDomain(hostname: string): boolean {
-  return SAFE_DOMAINS.some(
-    (d) => hostname === d || hostname.endsWith("." + d)
-  );
+  return SAFE_DOMAINS.some((d) => hostname === d || hostname.endsWith("." + d));
 }
 
 // function to check if any param matches from a given list
 export function hasParamMatch(
   params: Record<string, string>,
-  paramList: string[]
+  paramList: string[],
 ): boolean {
   return paramList.some((p) =>
-    Object.keys(params).some((k) => k.toLowerCase().startsWith(p))
+    Object.keys(params).some((k) => k.toLowerCase().startsWith(p)),
   );
 }
 
@@ -101,7 +140,7 @@ export function isRedirectURL(url: URL) {
 // function that excludes navigation hashes
 export function isInternalNavigation(
   url: URL,
-  currentLocation: Location
+  currentLocation: Location,
 ): boolean {
   if (
     url.origin !== currentLocation.origin ||
@@ -116,5 +155,35 @@ export function isInternalNavigation(
   if (!url.hash.includes("=")) return true;
 
   // Hash hat =, könnte Tracking sein
+  return false;
+}
+
+// ------------ Pixel Tracking Detection Helper Functions ------------ //
+// helper fuction to detect pixels
+export function looksLikeTrackingPixel(src: string): boolean {
+  const lower = src.toLowerCase();
+
+  // exclude own domain
+  if (lower.includes(window.location.hostname)) {
+    return false;
+  }
+
+  //  exclude normal images with normal paths
+  if (
+    /\/(images?|img|assets|media)\/.*\.(png|jpg|jpeg|gif|svg|webp)$/i.test(src)
+  ) {
+    return false;
+  }
+
+  // prefix check
+  if (TRACKING_PIXEL_KEYWORDS.prefix.some((p: string) => lower.startsWith(p))) {
+    return true;
+  }
+
+  // keyword check
+  if (TRACKING_PIXEL_KEYWORDS.includes.some((t: string) => lower.includes(t))) {
+    return true;
+  }
+
   return false;
 }

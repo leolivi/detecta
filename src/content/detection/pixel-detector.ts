@@ -1,11 +1,11 @@
+import { FALSE_POSITIVE_EXCLUSION_LIST } from "@/data/false-positive-list";
+import type { DetectionResult } from "@/types/detection-result";
+import { TrackingMethod } from "@/types/tracking-enums";
 import {
   extractTrackingParams,
+  looksLikeTrackingPixel,
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
-import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
-import {TrackingMethod} from "@/types/tracking-enums";
-import type {DetectionResult} from "@/types/detection-result";
-import {TRACKING_PIXEL_KEYWORDS} from "@/data/tracking-params";
 
 /* ---- Tracking Type: 
    Tracking Pixels – THIRD PARTY COMPONENTS
@@ -49,33 +49,4 @@ export function detectTrackingPixels(): DetectionResult[] {
   });
 
   return results;
-}
-
-// helper fuction to detect pixels
-function looksLikeTrackingPixel(src: string): boolean {
-  const lower = src.toLowerCase();
-
-  // exclude own domain
-  if (lower.includes(window.location.hostname)) {
-    return false;
-  }
-
-  //  exclude normal images with normal paths
-  if (
-    /\/(images?|img|assets|media)\/.*\.(png|jpg|jpeg|gif|svg|webp)$/i.test(src)
-  ) {
-    return false;
-  }
-
-  // prefix check
-  if (TRACKING_PIXEL_KEYWORDS.prefix.some((p: string) => lower.startsWith(p))) {
-    return true;
-  }
-
-  // keyword check
-  if (TRACKING_PIXEL_KEYWORDS.includes.some((t: string) => lower.includes(t))) {
-    return true;
-  }
-
-  return false;
 }

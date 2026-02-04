@@ -1,6 +1,6 @@
-import {TrackingMethod, type TrackerPurpose} from "@/types/tracking-enums";
-import {createRoot, type Root} from "react-dom/client";
-import {HotspotTooltip} from "../tooltip/hotspot-tooltip";
+import { TrackingMethod, type TrackerPurpose } from "@/types/tracking-enums";
+import { createRoot, type Root } from "react-dom/client";
+import { HotspotTooltip } from "../hotspot-tooltip/hotspot-tooltip";
 
 const hotspotRegistry = new Map<
   HTMLElement,
@@ -49,7 +49,7 @@ export function addHotspotWithTooltip(
   src: string,
   trackingParams: Record<string, string>,
   method: TrackingMethod,
-  purpose?: TrackerPurpose | null
+  purpose?: TrackerPurpose | null,
 ) {
   // Find the target element to attach the hotspot to
   let targetElement = element;
@@ -77,7 +77,7 @@ export function addHotspotWithTooltip(
         trackingParams={existing.trackingParams}
         method={existing.method}
         purpose={existing.purpose}
-      />
+      />,
     );
     return;
   }
@@ -143,7 +143,7 @@ export function addHotspotWithTooltip(
       trackingParams={trackingParams}
       method={method}
       purpose={purpose}
-    />
+    />,
   );
 
   hotspotRegistry.set(element, {

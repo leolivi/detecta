@@ -1,4 +1,3 @@
-import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
 import {
   ADVERTISING_PARAMS,
   AFFILIATE_PARAMS,
@@ -8,7 +7,9 @@ import {
   URL_SHORTENER_PARAMS,
   UTM_PARAMS,
 } from "@/data/tracking-params";
+import { TrackerPurpose, TrackingMethod } from "@/types/tracking-enums";
 
+import type { DetectionResult } from "@/types/detection-result";
 import {
   extractTrackingParams,
   hasHashParam,
@@ -19,7 +20,6 @@ import {
   isSocialDomain,
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
-import type {DetectionResult} from "@/types/detection-result";
 import { findTrackerByUrl } from "@/utils/tracking-url";
 
 /* ---- Tracking Type: 
@@ -78,7 +78,7 @@ export function detectTrackingLinks(): DetectionResult[] {
 
       if (
         AFFILIATE_PARAMS.some(
-          (a) => lower.includes(`${a}=`) || lower.includes(`${a}_`)
+          (a) => lower.includes(`${a}=`) || lower.includes(`${a}_`),
         )
       ) {
         method = TrackingMethod.AFFILIATE;

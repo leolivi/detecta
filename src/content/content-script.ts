@@ -1,16 +1,14 @@
-import {markTracking, resetTracking} from "@/utils/mark-tracking";
+import { markTracking, resetTracking } from "@/utils/mark-tracking";
 
-import {showSonnerNotification} from "@/ui/components/notification/show-notification";
-import {detectTrackingLinks} from "./detection/link-detector";
-import {
-  detectAdvertisements,
-  redetectAdsByDomain,
-} from "./detection/ad-detector";
-import {detectTrackingScripts} from "./detection/script-detector";
-import {detectTrackingPixels} from "./detection/pixel-detector";
-import {detectTrackingIframes} from "./detection/iframe-detector";
-import {detectTrackingWidgets} from "./detection/widget-detector";
-import {observeDomChanges} from "../utils/observe-dom-changes";
+import { showSonnerNotification } from "@/ui/components/notification/show-notification";
+import { redetectAdsByDomain } from "@/utils/tracking-helpers";
+import { observeDomChanges } from "../utils/observe-dom-changes";
+import { detectAdvertisements } from "./detection/ad-detector";
+import { detectTrackingIframes } from "./detection/iframe-detector";
+import { detectTrackingLinks } from "./detection/link-detector";
+import { detectTrackingPixels } from "./detection/pixel-detector";
+import { detectTrackingScripts } from "./detection/script-detector";
+import { detectTrackingWidgets } from "./detection/widget-detector";
 
 const alreadyProcessedDomains = new Set<string>();
 
@@ -48,7 +46,7 @@ const urlObserver = new MutationObserver(() => {
   if (location.href !== lastUrl) {
     lastUrl = location.href;
 
-    chrome.runtime.sendMessage({type: "RESET_CACHE"});
+    chrome.runtime.sendMessage({ type: "RESET_CACHE" });
     resetTracking();
     // re-run detections
     runAllDetections();
@@ -74,13 +72,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === "PING") {
-    sendResponse({alive: true});
+    sendResponse({ alive: true });
     return true;
   }
 
   if (message.type === "RERUN_DETECTIONS") {
     runAllDetections();
-    sendResponse({success: true});
+    sendResponse({ success: true });
     return true;
   }
 
@@ -89,7 +87,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     hotspots.forEach((el) => {
       (el as HTMLElement).style.display = message.visible ? "block" : "none";
     });
-    sendResponse({success: true});
+    sendResponse({ success: true });
     return true;
   }
 
@@ -111,11 +109,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "URL_PARAMS_DETECTED") {
     showSonnerNotification(
       `${message.count} URL Tracking detected: ${message.params}`,
-      "warning"
+      "warning",
     );
     console.log("URL_PARAMS_DETECTED", message.count);
   }
 
-  sendResponse({success: true, sender});
+  sendResponse({ success: true, sender });
   return true;
 });

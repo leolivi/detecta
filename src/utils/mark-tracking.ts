@@ -1,10 +1,10 @@
-import type {DetectionResult} from "@/types/detection-result";
-import {addHotspotWithTooltip} from "@/ui/components/tooltip/add-hotspot-with-tooltip";
-import {addLinkHoverEffect} from "./add-link-hover-effect";
+import type { DetectionResult } from "@/types/detection-result";
+import { addHotspotWithTooltip } from "@/ui/components/hotspot-tooltip/add-hotspot-with-tooltip";
+import { addLinkHoverEffect } from "./add-link-hover-effect";
 
 export function markTracking(results: DetectionResult[]): void {
   results.forEach((result) => {
-    const {element, url, method, purpose, params} = result;
+    const { element, url, method, purpose, params } = result;
 
     // links get hover effects
     if (element instanceof HTMLAnchorElement) {

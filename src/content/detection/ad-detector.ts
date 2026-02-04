@@ -1,9 +1,8 @@
-import {COOKIE_BANNER_KEYWORDS} from "@/data/false-positive-list";
-import {AD_KEYWORDS} from "@/data/tracking-params";
-import type {DetectionResult} from "@/types/detection-result";
-import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
+import type { DetectionResult } from "@/types/detection-result";
+import { TrackerPurpose, TrackingMethod } from "@/types/tracking-enums";
 import {
   extractTrackingParams,
+  isAdvertisement,
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
 
@@ -50,38 +49,4 @@ export function detectAdvertisements(): DetectionResult[] {
   });
 
   return results;
-}
-
-function isAdvertisement(iframe: HTMLIFrameElement): boolean {
-  const src = iframe.src || "";
-  const id = iframe.id || "";
-  const title = iframe.title || "";
-
-  const srcMatch = AD_KEYWORDS.some((kw) => src.includes(kw));
-  const attrMatch =
-    id.toLowerCase().includes("ad") || title.toLowerCase().includes("ad");
-  const emptyButLikelyAd = (!src || src === "about:blank") && attrMatch;
-
-  const basicAd = srcMatch || attrMatch || emptyButLikelyAd;
-
-  // exclude cookie and consent banners (false positives)
-  const isCookieBanner =
-    COOKIE_BANNER_KEYWORDS.some((kw) => src.toLowerCase().includes(kw)) ||
-    COOKIE_BANNER_KEYWORDS.some((kw) => id.toLowerCase().includes(kw)) ||
-    COOKIE_BANNER_KEYWORDS.some((kw) => title.toLowerCase().includes(kw));
-
-  return basicAd && !isCookieBanner;
-}
-
-export function redetectAdsByDomain(domain: string): DetectionResult[] {
-  const iframes = document.querySelectorAll<HTMLIFrameElement>("iframe");
-
-  iframes.forEach((iframe) => {
-    const src = iframe.src || "";
-    if (src.includes(domain)) {
-      delete iframe.dataset.adAnalyzed;
-    }
-  });
-
-  return detectAdvertisements();
 }

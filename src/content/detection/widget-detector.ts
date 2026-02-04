@@ -1,7 +1,7 @@
-import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
-import {notifyServiceWorker} from "@/utils/tracking-helpers";
-import {TrackerPurpose, TrackingMethod} from "@/types/tracking-enums";
-import type {DetectionResult} from "@/types/detection-result";
+import { FALSE_POSITIVE_EXCLUSION_LIST } from "@/data/false-positive-list";
+import type { DetectionResult } from "@/types/detection-result";
+import { TrackerPurpose, TrackingMethod } from "@/types/tracking-enums";
+import { notifyServiceWorker } from "@/utils/tracking-helpers";
 import { findTrackerByUrl } from "@/utils/tracking-url";
 
 /* ---- Tracking Type: 
@@ -15,7 +15,7 @@ const processedWidgets = new Set<string>();
 export function detectTrackingWidgets(): DetectionResult[] {
   const results: DetectionResult[] = [];
   const widgets = document.querySelectorAll<HTMLElement>(
-    'div[class*="fb-"], div[class*="twitter-"], div[class*="pinterest-"], div[class*="linkedin-"], div[class*="instagram-"], div[id*="fb-root"], a[class*="share"], div[data-pin-do]'
+    'div[class*="fb-"], div[class*="twitter-"], div[class*="pinterest-"], div[class*="linkedin-"], div[class*="instagram-"], div[id*="fb-root"], a[class*="share"], div[data-pin-do]',
   );
 
   widgets.forEach((widget) => {
@@ -34,7 +34,9 @@ export function detectTrackingWidgets(): DetectionResult[] {
     if (src) {
       // if false positive, skip
       if (FALSE_POSITIVE_EXCLUSION_LIST.some((d) => src.includes(d))) return;
-      const trackerInfo = findTrackerByUrl(src, { purposeFilter: [TrackerPurpose.SOCIAL] });
+      const trackerInfo = findTrackerByUrl(src, {
+        purposeFilter: [TrackerPurpose.SOCIAL],
+      });
       if (!trackerInfo) return;
     }
 

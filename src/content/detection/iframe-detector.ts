@@ -1,10 +1,10 @@
+import { FALSE_POSITIVE_EXCLUSION_LIST } from "@/data/false-positive-list";
+import type { DetectionResult } from "@/types/detection-result";
+import { TrackingMethod } from "@/types/tracking-enums";
 import {
   extractTrackingParams,
   notifyServiceWorker,
 } from "@/utils/tracking-helpers";
-import {FALSE_POSITIVE_EXCLUSION_LIST} from "@/data/false-positive-list";
-import {TrackingMethod} from "@/types/tracking-enums";
-import type {DetectionResult} from "@/types/detection-result";
 import { findTrackerByUrl } from "@/utils/tracking-url";
 
 /* ---- Tracking Type: 
