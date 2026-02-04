@@ -1,4 +1,4 @@
-import {GLOSSARY_ENTRIES} from "@/data/glossary-data";
+import { GLOSSARY_ENTRIES } from "@/data/glossary-data";
 import {
   Table,
   TableBody,
@@ -16,24 +16,25 @@ export function Glossary() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Icon</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead className="w-12">Icon</TableHead>
+              <TableHead className="w-32">Category</TableHead>
+              <TableHead className="w-[1fr]">Description</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {GLOSSARY_ENTRIES.map((entry) => (
-              <TableRow 
-                key={entry.category}
-              
-              >
+              <TableRow key={entry.category}>
                 <TableCell>
-                  <img src={entry.icon} alt={entry.category} className="w-6 h-6" />
+                  <img
+                    src={entry.icon}
+                    alt={entry.category}
+                    className="w-6 h-6"
+                  />
                 </TableCell>
                 <TableCell className="font-semibold">
                   {entry.category}
                 </TableCell>
-                <TableCell>{entry.description}</TableCell>
+                <TableCell className="truncate">{entry.description}</TableCell>
               </TableRow>
             ))}
           </TableBody>

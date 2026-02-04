@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { Switch } from "./switch";
 
 export function HotspotToggle() {
@@ -15,7 +15,7 @@ export function HotspotToggle() {
   const toggleVisibility = async (newValue: boolean) => {
     setVisible(newValue);
 
-    chrome.storage.local.set({hotspotsVisible: newValue});
+    chrome.storage.local.set({ hotspotsVisible: newValue });
 
     try {
       const [tab] = await chrome.tabs.query({
@@ -34,13 +34,17 @@ export function HotspotToggle() {
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+    <div
+      className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md min-[401px]:border               
+  min-[401px]:border-gray-300 
+  min-[401px]:dark:border-gray-600  hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+    >
       <Switch
         checked={visible}
         onCheckedChange={toggleVisibility}
         className="data-[state=checked]:bg-[#4caf2a] data-[state=unchecked]:bg-gray-400"
       />
-      <span className="text-sm">
+      <span className="text-xs min-[401px]:text-sm">
         {visible ? "Hotspots visible" : "Hotspots hidden"}
       </span>
     </div>
