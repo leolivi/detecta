@@ -78,15 +78,19 @@ export function extractTrackingParams(url: string): Record<string, string> {
         if (FEATURE_FLAG_PATTERNS.some((r) => r.test(key))) {
           return;
         }
-        const isKnownTrackingKey =
+        const isExplicitTrackingKey =
           UTM_PARAMS.some((p) => lowerKey.startsWith(p)) ||
           ANALYTICS_PARAMS.some((p) => lowerKey.startsWith(p)) ||
           SOCIAL_PARAMS.some((p) => lowerKey.startsWith(p)) ||
-          ADVERTISING_PARAMS.some((p) => lowerKey.startsWith(p)) ||
-          GENERAL_TRACKING_PARAMS.some((p) => lowerKey.startsWith(p));
+          ADVERTISING_PARAMS.some((p) => lowerKey.startsWith(p));
 
-        // only accept if the value actually looks like tracking
-        if (isKnownTrackingKey && looksLikeTrackingValue(value)) {
+        const isGeneralTrackingKey = GENERAL_TRACKING_PARAMS.some((p) =>
+          lowerKey.startsWith(p),
+        );
+
+        if (isExplicitTrackingKey) {
+          params[key] = value;
+        } else if (isGeneralTrackingKey && looksLikeTrackingValue(value)) {
           params[key] = value;
         }
       });

@@ -9,9 +9,11 @@ import {useTrackingStats} from "@/hooks/use-tracking-stats";
 import {ChartAlert} from "../alert/chart-alert";
 import {useState} from "react";
 import {getTotalTrackers} from "@/utils/total-trackers";
+import {useTrackerAverage} from "@/hooks/use-tracker-average";
 
 export function TrackingChart() {
   const stats = useTrackingStats();
+  const {average: userAverage, siteCount} = useTrackerAverage();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const chartData = [
@@ -63,9 +65,12 @@ export function TrackingChart() {
       <div className="pb-4">
         <h2 className="text-lg font-semibold">Embedded Tracking Overview</h2>
         {!shouldShowAlert && (
-          <p className="text-sm text-muted-foreground">
-            Total number of embedded trackers detected: {total}
-          </p>
+          <>
+            <p className="text-sm text-muted-foreground">
+              Total number of embedded trackers detected: <span className="font-bold">{total}</span>
+            </p>
+            
+          </>
         )}
         {stats.age && (
           <p className="text-xs text-muted-foreground mt-1">
@@ -92,12 +97,26 @@ export function TrackingChart() {
               tickMargin={10}
               axisLine={false}
             />
-            <YAxis />
+            <YAxis
+              allowDecimals={false}
+              domain={[0, (max: number) => Math.max(max, 20)]}
+            />
+            
             <Bar dataKey="value" radius={8} />
             <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
           </BarChart>
         </ChartContainer>
       )}
+      {siteCount >= 2 && userAverage > 0 && (
+              <p className="text-xs text-muted-foreground mt-5">
+                The current average across {siteCount} visited sites: ~{userAverage} trackers.
+                {/* {total > userAverage
+                  ? ` This site is ${Math.round((total / userAverage - 1) * 100)}% above the current average.`
+                  : total < userAverage
+                    ? ` This site is ${Math.round((1 - total / userAverage) * 100)}% below the current average.`
+                    : " This site matches the current average."} */}
+              </p>
+            )}
     </div>
   );
 }

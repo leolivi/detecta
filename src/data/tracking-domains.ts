@@ -88,7 +88,7 @@ setTimeout(async () => {
     );
     console.log(`Loaded ${TRACKER_MAP.size} total trackers`);
   } catch (e) {
-    console.warn("Could not load extended trackers", e);
+    console.debug("Could not load extended trackers", e);
   }
 }, 2000);
 

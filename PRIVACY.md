@@ -14,7 +14,7 @@ No user data is sent to external servers.
 
 ## Local Processing
 
-All analysis is performed locally within the browser and is limited to the currently active tab.
+All analysis is performed locally within the browser.
 Detected information (such as trackers, scripts, or URLs) is stored temporarily in session storage and is automatically cleared when the browser tab is closed.
 
 ## Permissions
