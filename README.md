@@ -62,11 +62,11 @@ Duck Duck Go, Inc., 2025. duckduckgo/tracker-radar. Verfügbar unter: https://gi
 2025].
 
 Mozilla, 2025. Browser extensions - Mozilla | MDN. [online] MDN Web Docs.
-Verfügbar unter: <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/
-WebExtensions> [Zugegriffen 13 November 2025].
+Verfügbar unter: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/
+WebExtensions [Zugegriffen 13 November 2025].
 
 Oh, C., 2025. 5tigerjelly/chrome-extension-react-template. Verfügbar unter:
-<https://github.com/5tigerjelly/chrome-extension-react-template> [Zugegriffen
+https://github.com/5tigerjelly/chrome-extension-react-template [Zugegriffen
 13 November 2025].
 
 Michalczyk, M., 2025. SVG Shapes. [online] Verfügbar unter: https://www.shapes.gallery/ [Zugegriffen 25 Dezember 2025].
